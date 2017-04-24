@@ -1,3 +1,4 @@
+#pragma once
 
 namespace robo{
 	class Link{
@@ -10,7 +11,7 @@ namespace robo{
 		Link(int id, const Joint& joint, const Frame& tip);
 
 		Frame pose(const double& q)const;
-		Twist twist(const double& q, const double &dq)const;
+		Eigen::Vector6d twist(const double& q, const double &dq)const;
 	}
 
 }	

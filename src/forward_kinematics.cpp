@@ -12,7 +12,7 @@ namespace robo{
 			this->chain = chain;
 		}
 		
-		void joint2cartesian(std::vector<Frame> out){
+		void joint2cartesian(const Eigen::VectorXd& q; std::vector<Frame> f_out){
 
 		}
 		
