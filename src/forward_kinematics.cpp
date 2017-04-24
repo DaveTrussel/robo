@@ -1,6 +1,5 @@
-#pragma once
-
-#include "forward_kinematics.h"
+#include "../include/forward_kinematics.hpp"
+#include <Eigen/Dense>
 
 namespace robo{
 

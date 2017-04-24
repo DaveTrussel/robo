@@ -1,36 +1,39 @@
-#pragma once
+#include "../include/core.hpp"
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <string.h>
 
-#include "core.hpp"
 
 namespace robo {
-
-	typedef enum { None,RotX,RotY,RotZ } JointType;
 
 	class Joint{
 	public:
 		
 		int id;
-		JointType type;
 		Eigen::Vector3d axis;
 		Eigen::Vector3d origin;
 
-		Joint(const int id, const JointType& type=None, Eigen::Vector3d origin){
+		Joint(const int id, const Eigen::Vector3d axis; Eigen::Vector3d origin){
 			this->id = id;
 			this->type = type;
 			this->origin = origin;
-			if(type == RotX){
-				axis = Eigen::Vector3d::UnitX();
-			}
-			if(type == RotY){
-				axis = Eigen::Vector3d::UnitY();
-			}
-			if(type == RotZ){
-				axis = Eigen::Vector3d::UnitZ();
-			}
-			else{
-				axis = Eigen::Vector3d::Zero();
-			}
+			this->axis = axis;
 		};
+
+
+		// Named constructors
+		static Joint createRotX(const int id, Eigen::Vector3d origin){
+			return Joint(id, Eigen::Vector3d::UnitX(); origin)
+		};
+
+		static Joint createRotY(const int id, Eigen::Vector3d origin){
+			return Joint(id, Eigen::Vector3d::UnitY(); origin)
+		};
+		
+		static Joint createRotZ(const int id, Eigen::Vector3d origin){
+			return Joint(id, Eigen::Vector3d::UnitZ(); origin)
+		};
+
 
 		Frame pose(const double& q)const{
 		//TODO
