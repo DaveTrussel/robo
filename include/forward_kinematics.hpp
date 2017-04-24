@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chain.h"
+#include "chain.hpp"
 
 #include <vector>
 

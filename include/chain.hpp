@@ -8,8 +8,8 @@ namespace robo{
 
 	class Chain{
 	public:
-		unsigned int nr_Joints;
-		unsigned int nr_Links;
+		unsigned int nr_joints;
+		unsigned int nr_links;
 		
 		std::vector<Link> links;
 

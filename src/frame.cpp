@@ -12,13 +12,13 @@ namespace robo {
 
 		// Constructors
 		Frame(const Eigen::Vector3d& vec, const Eigen::Matrix3d& rot):
-			origin(vec), orientation(rot){};
+			origin(vec), orientation(rot){}
 
 		Frame(const Eigen::Vector3d& vec):
-			origin(vec), orientation(Eigen::Matrix3d::Identity()){};
+			origin(vec), orientation(Eigen::Matrix3d::Identity()){}
 
 		Frame():
-			origin(Eigen::Vector3d::Zero()), orientation(Eigen::Matrix3d::Identity()){};
+			origin(Eigen::Vector3d::Zero()), orientation(Eigen::Matrix3d::Identity()){}
 
 		// Named constructors
 		static Frame DenavitHartenberg(double a, double alpha, double d, double theta);
