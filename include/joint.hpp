@@ -1,25 +1,29 @@
 #pragma once
 
-#include "core.hpp"
+#include "frame.hpp"
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 namespace robo {
 
-	typedef enum { None,RotX,RotY,RotZ } JointType;
+	typedef enum class { None, Rotation, Translational } JointType;
 
 	class Joint{
 	public:
 		
+		// Members
 		int id;
 		JointType type;
 		Eigen::Vector3d axis;
-		Eigen::Vector3d origin;
+		Frame frame;
 
-		Joint(const int id, const JointType& type=None);
+		// Constructors
+		Joint(const int id_in, const Frame frame_in, const Eigen::Vector3d axis_in, 
+			const JointType type_in=JointType::Rotational);
+		Joint(const int id_in, const Vector3d origin_in, const Eigen::Vector3d axis_in, 
+			const JointType type_in=JointType::Rotational);
 
-		static Joint createRotX(const int id, Eigen::Vector3d origin);
-		static Joint createRotY(const int id, Eigen::Vector3d origin);
-		static Joint createRotZ(const int id, Eigen::Vector3d origin);
-
+		// Member functions
 		Frame pose(const double& q)const;
 
 		Eigen::Vector6d twist(const double& q, const double &dq)const;
