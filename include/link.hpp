@@ -1,5 +1,8 @@
 #pragma once
 
+#include "joint.hpp"
+#include <Eigen/Dense>
+
 namespace robo{
 	class Link{
 	public:

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "link.hpp"
-
+#include <Eigen/Dense>
 #include <vector>
 
 namespace robo{
@@ -16,8 +16,6 @@ namespace robo{
 		Chain();
 		
 		void addLink(const Link& link);
-
-		void setJointPositions(const Eigen::VectorXd& q)
 	}
 
 }	

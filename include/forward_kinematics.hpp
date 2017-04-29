@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chain.hpp"
-
+#include <Eigen/Dense>
 #include <vector>
 
 namespace robo{

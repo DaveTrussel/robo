@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Eigen/Dense>
 
 namespace robo {
@@ -20,7 +21,9 @@ namespace robo {
 		static Frame DenavitHartenberg(double a, double alpha, double d, double theta);
 		static Frame DenavitHartenberg_Craig1989(double a, double alpha, double d, double theta);
 
+		// Operators
 		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;
+		Frame operator *(const Frame& left, const Frame& rigth);
 	}
 
 

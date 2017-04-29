@@ -1,7 +1,6 @@
 #include "../include/frame.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <string.h>
 
 
 namespace robo {

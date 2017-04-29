@@ -1,6 +1,6 @@
 #pragma once
 
-namespace robo{
+namespace robo {
 	class Link{
 	public:
 
@@ -12,11 +12,11 @@ namespace robo{
 			id(id_in), joint(joint_in), tip(tip_in){}
 
 		Frame pose(const double& q)const{
-			//TODO
+			return joint.pose(q)*tip;
 		}
 		
 		Eigen::Vector6d twist(const double& q, const double &dq)const{
-			//TODO
+			return Eigen::Vector6d(); // TODO
 		}
 		
 		bool has_joint(){
