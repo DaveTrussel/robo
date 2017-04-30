@@ -1,4 +1,5 @@
-#pragma once
+#include "../include/link.hpp"
+#include "../include/frame.hpp"
 
 namespace robo {
 	class Link{
@@ -25,5 +26,3 @@ namespace robo {
 	}
 
 }	
-
-		

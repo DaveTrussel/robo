@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../include/chain.hpp"
 
 namespace robo{
@@ -21,5 +19,4 @@ namespace robo{
 			}
 		}
 	}
-
 }	

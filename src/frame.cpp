@@ -5,7 +5,6 @@ namespace robo {
 
 	class Frame{
 	public:
-
 		// Members
 		Eigen::Vector3d origin;
 		Eigen::Matrix3d orientation;

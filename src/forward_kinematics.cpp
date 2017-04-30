@@ -12,14 +12,9 @@ namespace robo{
 		}
 		
 		void joint2cartesian(const Eigen::VectorXd& q; std::vector<Frame> f_out){
-
 			if(chain.links[0].has_joint()){
 				f_out[0] = chain.links[0].pose(q(0))
 			}
-
-			
 		}
-		
 	}
-
 }	
