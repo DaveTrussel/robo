@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/DaveTrussel/robo.svg?branch=master)](https://travis-ci.org/DaveTrussel/robo)
 
+Built with the following compilers: g++5, g++6, clang++3.6, clang++3.9
+
 This project is intended to provide a simple interface to model robotic manipulators. 
 
 ## Getting Started
@@ -10,44 +12,35 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Dependencies
 
-Depends on the Eigen library (for now still in the repo)
+Depends on the Eigen3 header-only library (for now still in the repo)
 
+On Ubuntu install the header files with:
 ```
-Give examples
+sudo apt-get install libeigen3-dev
 ```
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
+This project uses the Cmake build system
 
 ```
-Give the example
+mkdir build && cd build
+cmake ..
 ```
 
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+TODO for now only test application is build. Maybe build a shared or static lib instead.
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+Basic functionality is currently tested in the `testing` executable.
 
-### Break down into end to end tests
-
-Explain what these tests test and why
 
 ```
-Give an example
+./testing
 ```
 
-### Basic sage
-Explain how to use it
+### Basic Usage
+TODO Explain how to use it
 
 ```
 Give an example
