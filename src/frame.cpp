@@ -24,9 +24,9 @@ namespace robo {
 
 	// Member functions
 	Eigen::Matrix4d Frame::as_homogeneous_matrix()const{
-		Eigen::Matrix4d homo;
-		homo.block(0,0,2,2) = orientation;
-		homo.block(0,3,2,3) = origin;
+		Eigen::Matrix4d homo = Eigen::Matrix4d::Constant(0.0);
+		homo.block(0,0,3,3) = orientation;
+		homo.block(0,3,3,1) = origin;
 		homo.row(3) << 0.0, 0.0, 0.0, 1.0;
 		return homo;
 	}

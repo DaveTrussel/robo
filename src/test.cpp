@@ -9,9 +9,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <chrono>
 
 using namespace robo;
 using namespace std;
+using namespace std::chrono;
+
+#define now() high_resolution_clock::now()
+typedef high_resolution_clock::time_point TimePoint;
 
 int main () {
 	Eigen::Vector3d axis;
@@ -38,6 +43,11 @@ int main () {
  	q << 1.5, 0.5;
  	cout << "q: " << q << endl;
  	std::vector<Frame> f_out(chain.nr_links);
+ 	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
+ 	TimePoint toc = now();
+ 	auto duration = duration_cast<microseconds>( toc - tic ).count();
+ 	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
+ 	cout << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
  } 
