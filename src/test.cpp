@@ -6,12 +6,13 @@
 
 #include <Eigen/Dense>
 
+using namespace robo
 
 int main () {
-	Eigen::Vecotr3d axis << 0.0, 0.0, 1.0;
+	Eigen::Vector3d axis << 0.0, 0.0, 1.0;
 	Frame f = Frame();
 	Joint joint_1 = Joint(1, f, axis, JointType::Rotational); 
-	Eigen::Vecotr3d length << 1.0, 1.0, 1.0;
+	Eigen::Vector3d length << 1.0, 1.0, 1.0;
 	Frame tip = Frame(length);
 	Link link_01 = Link(1, joint_1, tip);
  } 

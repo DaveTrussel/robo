@@ -5,7 +5,7 @@
 
 namespace robo {
 
-	typedef enum class JointType { None, Rotational, Translational };
+	enum class JointType { None, Rotational, Translational };
 
 	class Joint{
 	public:
