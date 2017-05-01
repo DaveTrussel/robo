@@ -19,28 +19,47 @@ using namespace std::chrono;
 typedef high_resolution_clock::time_point TimePoint;
 
 int main () {
-	Eigen::Vector3d axis;
-	axis << 0.0, 0.0, 1.0;
+	Eigen::Vector3d axis_z, axis_y;
+	
+	axis_y << 0.0, 1.0, 0.0;
+	axis_z << 0.0, 0.0, 1.0;
+	
 	Frame f = Frame();
-	Joint joint_1 = Joint(1, f, axis, JointType::Rotational);
-	Joint joint_2 = Joint(2, f, axis, JointType::Rotational); 
+	
+	Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
+	Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
+	Joint joint_none = Joint(0, f, axis_z, JointType::None);
+	
 	Eigen::Vector3d length;
-	length << 1.0, 1.0, 1.0;
+	length << 0.0, 0.0, 1.0;
 	Frame tip = Frame(length);
-	Link link_1 = Link(1, joint_1, tip);
-	Link link_2 = Link(2, joint_2, tip);
+	
+	Link link_0 = Link(0, joint_none, tip);
+	Link link_1 = Link(1, joint_wrist, tip);
+	Link link_2 = Link(2, joint_ellbow, tip);
+	Link link_3 = Link(3, joint_ellbow, tip);
+	Link link_4 = Link(4, joint_wrist, tip);
+	Link link_5 = Link(5, joint_ellbow, tip);
+	Link link_6 = Link(6, joint_wrist, tip);
+	
 	Chain chain;
+	chain.addLink(link_0);
 	chain.addLink(link_1);
 	chain.addLink(link_2);
-	Frame turned = joint_1.pose(1.0);
+	chain.addLink(link_3);
+	chain.addLink(link_4);
+	chain.addLink(link_5);
+	chain.addLink(link_6);
+	
+	Frame turned = joint_wrist.pose(1.0);
 	cout << "DEBUG turned frame joint: " << endl << turned.origin << endl << turned.orientation << endl;
-	turned = link_1.pose(1.0);
+	turned = link_0.pose(1.0);
 	cout << "DEBUG turned frame link tip: " << endl << turned.origin << endl << turned.orientation << endl;
  	
  	ForwardKinematics fk = ForwardKinematics(chain);
  	cout << "I have forward kinematics." << endl;
- 	Eigen::VectorXd q(chain.nr_joints);
- 	q << 1.5, 0.5;
+ 	Eigen::VectorXd q(chain.nr_links);
+ 	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
  	cout << "q: " << q << endl;
  	std::vector<Frame> f_out(chain.nr_links);
  	TimePoint tic = now();
