@@ -11,8 +11,8 @@ addons:
     - g++-6
 
 before_install:
-- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
-- gcc -v
+- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 60
+- g++ -v
 
 script:
 - mkdir build && cd build
@@ -20,5 +20,5 @@ script:
 - make
 
 compiler:
-- gcc
+- g++
 - clang
