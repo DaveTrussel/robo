@@ -29,6 +29,6 @@ namespace robo {
 
 	Frame operator *(const Frame& left, const Frame& rigth){
 			return Frame(left.orientation*rigth.origin+left.origin,
-						 left.orientation*rigth.orientation)
+						 left.orientation*rigth.orientation);
 	}
 }

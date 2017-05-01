@@ -6,7 +6,11 @@
 
 #include <Eigen/Dense>
 
+#include <iostream>
+#include <string>
+
 using namespace robo;
+using namespace std;
 
 int main () {
 	Eigen::Vector3d axis;
@@ -17,4 +21,8 @@ int main () {
 	length << 1.0, 1.0, 1.0;
 	Frame tip = Frame(length);
 	Link link_01 = Link(1, joint_1, tip);
+	Chain chain;
+	chain.addLink(link_01);
+	Frame turned = joint_1.pose(1.0);
+	cout << "DEBUG turned frame: " << endl << turned.origin << endl << turned.orientation << endl;
  } 
