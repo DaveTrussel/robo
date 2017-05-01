@@ -2,7 +2,7 @@
 
 namespace robo{
 
-	Chain::Chain();
+	Chain::Chain():nr_joints(0), nr_links(0){};
 	
 	void Chain::addLink(const Link& link){
 		links.push_back(link);

@@ -18,7 +18,7 @@ namespace robo{
 
 		Frame pose(const double& q)const;
 		Vector6d twist(const double& q, const double &dq)const;
-		bool has_joint();
+		bool has_joint()const;
 	};
 
 }	

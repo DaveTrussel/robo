@@ -14,7 +14,7 @@ namespace robo {
 		return Vector6d(); // TODO
 	}
 	
-	bool Link::has_joint(){
+	bool Link::has_joint() const{
 		return joint.type != JointType::None;
 	}
 
