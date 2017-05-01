@@ -21,7 +21,16 @@ namespace robo {
 	Frame Frame::DenavitHartenberg_Craig1989(double a, double alpha, double d, double theta){
 		return Frame(); // TODO
 	}
-	
+
+	// Member functions
+	Eigen::Matrix4d Frame::as_homogeneous_matrix()const{
+		Eigen::Matrix4d homo;
+		homo.block(0,0,2,2) = orientation;
+		homo.block(0,3,2,3) = origin;
+		homo.row(3) << 0.0, 0.0, 0.0, 1.0;
+		return homo;
+	}
+
 	// Operators
 	Eigen::Vector3d Frame::operator *(const Eigen::Vector3d & arg) const{
 	    return origin + orientation*arg;
