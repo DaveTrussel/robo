@@ -7,4 +7,4 @@ include_directories(include lib/Eigen)
 #However, the file(GLOB...) allows for wildcard additions:
 file(GLOB SOURCES "src/*.cpp")
  
-add_executable(test ${SOURCES})
+add_executable(testing ${SOURCES})
