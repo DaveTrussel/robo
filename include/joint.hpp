@@ -4,9 +4,10 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-typedef Eigen::Matrix< double, 6, 1 > Eigen::Vector6d;
 
 namespace robo {
+
+	typedef Eigen::Matrix< double, 6, 1 > Vector6d;
 
 	enum class JointType { None, Rotational, Translational };
 
@@ -28,7 +29,7 @@ namespace robo {
 		// Member functions
 		Frame pose(const double& q)const;
 
-		Eigen::Vector6d twist(const double& q, const double &dq)const;
+		Vector6d twist(const double& q, const double &dq)const;
 
 		Eigen::Matrix3d rotation(const double& q)const;
 

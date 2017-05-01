@@ -5,8 +5,6 @@
 
 namespace robo {
 
-	enum class JointType { None, Rotational, Translational };
-
 	class Joint{
 	public:
 
@@ -39,8 +37,8 @@ namespace robo {
 			}
 		};
 
-		Eigen::Vector6d twist(const double &dq)const{
-			Eigen::Vector6d twist;
+		Vector6d twist(const double &dq)const{
+			Vector6d twist;
 			Eigen::Vector3d speed_lin;
 			Eigen::Vector3d speed_rot;
 			if(JointType::Rotational){
