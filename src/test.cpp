@@ -6,7 +6,7 @@
 
 #include <Eigen/Dense>
 
-using namespace robo
+using namespace robo;
 
 int main () {
 	Eigen::Vector3d axis;

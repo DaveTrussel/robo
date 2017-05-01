@@ -4,6 +4,9 @@
 #include <Eigen/Dense>
 
 namespace robo{
+
+	typedef Eigen::Matrix< double, 6, 1 > Vector6d; // TODO make a own typedef header file
+
 	class Link{
 	public:
 

@@ -16,8 +16,8 @@ namespace robo {
 			return joint.pose(q)*tip;
 		}
 		
-		Eigen::Vector6d twist(const double& q, const double &dq)const{
-			return Eigen::Vector6d(); // TODO
+		Vector6d twist(const double& q, const double &dq)const{
+			return Vector6d(); // TODO
 		}
 		
 		bool has_joint(){
