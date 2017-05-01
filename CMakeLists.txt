@@ -8,3 +8,6 @@ include_directories(include lib/Eigen)
 file(GLOB SOURCES "src/*.cpp")
  
 add_executable(testing ${SOURCES})
+
+set_property(TARGET testing PROPERTY CXX_STANDARD 11)
+set_property(TARGET testing PROPERTY CXX_STANDARD_REQUIRED ON)
