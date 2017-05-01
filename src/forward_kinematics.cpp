@@ -16,5 +16,5 @@ namespace robo{
 				f_out[0] = chain.links[0].pose(q(0))
 			}
 		}
-	}
+	};
 }	

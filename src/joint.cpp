@@ -5,7 +5,7 @@
 
 namespace robo {
 
-	typedef enum class { None, Rotational, Translational } JointType;
+	typedef enum class JointType { None, Rotational, Translational };
 
 	class Joint{
 	public:
@@ -21,7 +21,7 @@ namespace robo {
 			const JointType type_in=JointType::Rotational):
 		id(id_in), frame(frame_in), axis(axis_in), type(type_in){};
 
-		Joint(const int id_in, const Vector3d origin_in, const Eigen::Vector3d axis_in, 
+		Joint(const int id_in, const Eigen::Vector3d origin_in, const Eigen::Vector3d axis_in, 
 			const JointType type_in=JointType::Rotational):
 		id(id_in), frame(origin_in), axis(axis_in), type(type_in){};
 
@@ -58,6 +58,6 @@ namespace robo {
 			return twist
 		};
 
-	}
+	};
 
 }

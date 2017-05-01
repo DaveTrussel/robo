@@ -23,6 +23,6 @@ namespace robo {
 		bool has_joint(){
 			return joint.type != JointType::None;
 		}
-	}
+	};
 
 }	

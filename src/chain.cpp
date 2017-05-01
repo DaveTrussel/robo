@@ -18,5 +18,5 @@ namespace robo{
 				nr_joints++;
 			}
 		}
-	}
+	};
 }	
