@@ -7,16 +7,20 @@ matrix:
         apt:
           sources:
           - ubuntu-toolchain-r-test
+          - george-edison55/precise-backports
           packages:
           - g++-5
+          - cmake
       env: COMPILER=g++-5
     - compiler: gcc
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
+          - george-edison55/precise-backports
           packages:
           - g++-6
+          - cmake
       env: COMPILER=g++-6
     - compiler: clang
       addons:
@@ -24,8 +28,10 @@ matrix:
           sources:
           - ubuntu-toolchain-r-test
           - llvm-toolchain-precise-3.6
+          - george-edison55/precise-backports
           packages:
           - clang-3.6
+          - cmake
       env: COMPILER=clang++-3.6
     - compiler: clang
       addons:
@@ -33,17 +39,11 @@ matrix:
           sources:
           - ubuntu-toolchain-r-test
           - llvm-toolchain-precise-3.9
+          - george-edison55/precise-backports
           packages:
           - clang-3.9
+          - cmake
       env: COMPILER=clang++-3.9
-
-addons:
-  apt:
-    sources:
-    - george-edison55/precise-backports
-    packages:
-    - cmake
-  
 
 script:
 - cmake --version
