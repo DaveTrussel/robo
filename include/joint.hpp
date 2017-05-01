@@ -4,9 +4,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-namespace robo {
+typedef Eigen::Matrix< double, 6, 1 > Eigen::Vector6d;
 
-	typedef Matrix< double, 6, 1 > 	Eigen::Vector6d;
+namespace robo {
 
 	enum class JointType { None, Rotational, Translational };
 
