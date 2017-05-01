@@ -29,7 +29,3 @@ class RotationMatrix3d:
 			self.data[i,j] = lst_of_lst[i][j]     
 	return self.data
 
-	
-
-
-

@@ -12,8 +12,8 @@ namespace robo{
 
 		ForwardKinematics(const Chain& chain);
 		
-		void joint2cartesian(const Eigen::VectorXd& q; std::vector<Frame> f_out)
+		void joint2cartesian(const Eigen::VectorXd& q; std::vector<Frame> f_out);
 		
-	}
+	};
 
 }	
