@@ -16,6 +16,6 @@ namespace robo{
 		Chain();
 		
 		void addLink(const Link& link);
-	}
+	};
 
 }	

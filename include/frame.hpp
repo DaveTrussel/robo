@@ -23,6 +23,7 @@ namespace robo {
 
 		// Operators
 		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;
-		Frame operator *(const Frame& left, const Frame& rigth);
-	}
+	};
+
+	Frame operator *(const Frame& left, const Frame& rigth);
 }
