@@ -46,7 +46,7 @@ addons:
   
 
 script:
-- cmake -V
+- cmake --version
 - mkdir build && cd build
 - cmake -DCMAKE_CXX_COMPILER=$COMPILER ..
 - make
