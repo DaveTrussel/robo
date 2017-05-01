@@ -4,6 +4,7 @@ addons:
   apt:
     packages:
     - libeigen3-dev
+    - build-essential
 
 script:
 - mkdir build && cd build
