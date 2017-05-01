@@ -14,11 +14,11 @@ namespace robo {
 		origin(Eigen::Vector3d::Zero()), orientation(Eigen::Matrix3d::Identity()){}
 
 	// Named constructors
-	static Frame Frame::DenavitHartenberg(double a, double alpha, double d, double theta){
+	Frame Frame::DenavitHartenberg(double a, double alpha, double d, double theta){
 		return Frame(); // TODO
 	}
 
-	static Frame Frame::DenavitHartenberg_Craig1989(double a, double alpha, double d, double theta){
+	Frame Frame::DenavitHartenberg_Craig1989(double a, double alpha, double d, double theta){
 		return Frame(); // TODO
 	}
 	
@@ -27,7 +27,7 @@ namespace robo {
 	    return origin + orientation*arg;
 	}
 
-	Frame Frame::operator *(const Frame& left, const Frame& rigth){
+	Frame operator *(const Frame& left, const Frame& rigth){
 			return Frame(left.orientation*rigth.origin+left.origin,
 						 left.orientation*rigth.orientation)
 	}
