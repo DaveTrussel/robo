@@ -8,8 +8,9 @@ namespace robo{
 	}
 	
 	void ForwardKinematics::joint2cartesian(const Eigen::VectorXd& q, std::vector<Frame> f_out){
-		if(chain.links[0].has_joint()){
-			f_out[0] = chain.links[0].pose(q(0));
+		f_out[0] = chain.links[0].pose(q[0]) // init
+		for(int i=1; i<chain.nr_links, i++){
+			f_out[i] = f_out[i-1]*chain.links[i].pose(q[i])
 		}
 	}
 }	

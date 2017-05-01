@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace robo;
 using namespace std;
@@ -25,4 +26,10 @@ int main () {
 	chain.addLink(link_01);
 	Frame turned = joint_1.pose(1.0);
 	cout << "DEBUG turned frame: " << endl << turned.origin << endl << turned.orientation << endl;
+ 	
+ 	ForwardKinematics fk = ForwardKinematics(chain);
+ 	Eigen::VectorXd q;
+ 	q << 1.5;
+ 	std::vector<Frame> f_out(1);
+ 	fk.joint2cartesian(q, f_out)
  } 
