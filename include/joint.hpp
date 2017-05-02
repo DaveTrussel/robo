@@ -7,8 +7,6 @@
 
 namespace robo {
 
-	typedef Eigen::Matrix< double, 6, 1 > Vector6d;
-
 	enum class JointType { None, Rotational, Translational };
 
 	class Joint{

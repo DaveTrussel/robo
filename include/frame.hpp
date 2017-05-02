@@ -4,6 +4,8 @@
 
 namespace robo {
 
+	typedef Eigen::Matrix< double, 6, 1 > Vector6d;
+
 	class Frame{
 	public:
 
@@ -29,4 +31,6 @@ namespace robo {
 	};
 
 	Frame operator *(const Frame& left, const Frame& rigth);
+
+	Vector6d
 }
