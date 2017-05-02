@@ -45,10 +45,10 @@ namespace robo {
 						 left.orientation*rigth.orientation);
 	}
 
-	Vector6d robo::change_twist_reference(const Vector6d& twist, const Eigen::Vector3d delta_ref){
+	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref){
 		Vector6d twist_new;
-		twist_new<3,1>(0,0) << twist<3,1>(0,0) + delta_ref.cross(twist<3,1>(3,0));
-		twist_new<3,1>(3,0) << twist<3,1>(3,0);
+		twist_new.block<3,1>(0,0) << twist.block<3,1>(0,0) + delta_ref.cross(twist.block<3,1>(3,0));
+		twist_new.block<3,1>(3,0) << twist.block<3,1>(3,0);
 		return twist_new;
 	}
 }
