@@ -22,6 +22,7 @@ namespace robo {
 
 		// Member functions
 		Eigen::Matrix4d as_homogeneous_matrix()const;
+		Eigen::Vector3d nautical_angles()const;
 
 		// Operators
 		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;

@@ -31,6 +31,10 @@ namespace robo {
 		return homo;
 	}
 
+	Eigen::Vector3d Frame::nautical_angles()const{
+		return orientation.eulerAngles(0,1,2);
+	}
+
 	// Operators
 	Eigen::Vector3d Frame::operator *(const Eigen::Vector3d & arg) const{
 	    return origin + orientation*arg;

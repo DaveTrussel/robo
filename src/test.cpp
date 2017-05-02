@@ -62,4 +62,5 @@ int main () {
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
  	cout << endl << "As a homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
+ 	cout << endl << "It's nautical_angles:" << endl << f_out.at(chain.nr_links-1).nautical_angles() << endl;
  } 
