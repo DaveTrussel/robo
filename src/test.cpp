@@ -58,9 +58,9 @@ int main () {
  	
  	ForwardKinematics fk = ForwardKinematics(chain);
  	cout << "I have forward kinematics." << endl;
- 	Eigen::VectorXd q(chain.nr_links);
+ 	Eigen::VectorXd q(chain.nr_link);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
- 	std::vector<Frame> f_out(chain.nr_links);
+ 	std::vector<Frame> f_out(chain.nr_joints);
  	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
  	TimePoint toc = now();
