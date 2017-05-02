@@ -32,5 +32,5 @@ namespace robo {
 
 	Frame operator *(const Frame& left, const Frame& rigth);
 
-	Vector6d
+	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d delta_ref);
 }

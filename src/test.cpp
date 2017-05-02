@@ -55,6 +55,11 @@ int main () {
  	Eigen::VectorXd q(chain.nr_joints);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
  	std::vector<Frame> f_out(chain.nr_links);
+ 	Eigen::VectorXd dq(chain.nr_joints);
+ 	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+
+ 	cout << "DEBUG: Link twist:" << endl << link_4.twist(0.5, 0.7); << endl;
+
  	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
  	TimePoint toc = now();
