@@ -50,16 +50,10 @@ int main () {
 	chain.addLink(link_4);
 	chain.addLink(link_5);
 	chain.addLink(link_6);
-	
-	Frame turned = joint_wrist.pose(1.0);
-	cout << "DEBUG turned frame joint: " << endl << turned.origin << endl << turned.orientation << endl;
-	turned = link_0.pose(1.0);
-	cout << "DEBUG turned frame link tip: " << endl << turned.origin << endl << turned.orientation << endl;
  	
  	ForwardKinematics fk = ForwardKinematics(chain);
- 	cout << "I have forward kinematics." << endl;
- 	Eigen::VectorXd q(chain.nr_links);
- 	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+ 	Eigen::VectorXd q(chain.nr_joints);
+ 	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
  	std::vector<Frame> f_out(chain.nr_links);
  	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
@@ -67,5 +61,5 @@ int main () {
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
- 	cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
+ 	cout << endl << "As a homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
  } 
