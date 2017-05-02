@@ -60,7 +60,6 @@ int main () {
  	cout << "I have forward kinematics." << endl;
  	Eigen::VectorXd q(chain.nr_links);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
- 	cout << "q: " << q << endl;
  	std::vector<Frame> f_out(chain.nr_links);
  	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
@@ -68,5 +67,5 @@ int main () {
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
- 	cout << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
+ 	cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
  } 

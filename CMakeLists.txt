@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 2.8.0)
+cmake_minimum_required(VERSION 2.8.0) # TODO increase to 3.1 if available on travis
 project(robo)
- 
-#Bring the headers, such as Student.h into the project
+
 include_directories(include lib/ /usr/include/eigen3)
- 
-#However, the file(GLOB...) allows for wildcard additions:
+
 file(GLOB SOURCES "src/*.cpp")
- 
+
 add_executable(testing ${SOURCES})
 
 set_property(TARGET testing PROPERTY CXX_STANDARD 11)
 set_property(TARGET testing PROPERTY CXX_STANDARD_REQUIRED ON)
+# cmake>=3.1 not available on travis set std11 manually
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

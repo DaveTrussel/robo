@@ -1,25 +1,45 @@
 language: cpp
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - h-rayflood/llvm
-    packages:
-    - libeigen3-dev
-    - build-essential
-    - g++-6
-    - clang
-
-before_install:
-- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
-- gcc -v
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-5
+      env: COMPILER=g++-5
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-6
+      env: COMPILER=g++-6
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.6
+          packages:
+          - clang-3.6
+      env: COMPILER=clang++-3.6
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.9
+          packages:
+          - clang-3.9
+      env: COMPILER=clang++-3.9
 
 script:
+- cmake --version
 - mkdir build && cd build
-- cmake ..
+- cmake -DCMAKE_CXX_COMPILER=$COMPILER ..
 - make
-
-compiler:
-- gcc
-- clang
+- ./testing
