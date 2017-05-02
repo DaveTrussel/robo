@@ -52,9 +52,9 @@ int main () {
 	chain.addLink(link_6);
  	
  	ForwardKinematics fk = ForwardKinematics(chain);
- 	Eigen::VectorXd q(chain.nr_link);
+ 	Eigen::VectorXd q(chain.nr_joints);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
- 	std::vector<Frame> f_out(chain.nr_joints);
+ 	std::vector<Frame> f_out(chain.nr_links);
  	TimePoint tic = now();
  	fk.joint2cartesian(q, f_out);
  	TimePoint toc = now();
