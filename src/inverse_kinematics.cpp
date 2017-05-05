@@ -12,11 +12,14 @@ namespace robo{
 		                                    Eigen::VectorXd& q_out){
 		q_out = q_start;
 		for(int iter=0; iter<max_iter; iter++){
-			fk.joint2cartesian(q_out, target);
-			// TODO clculate delta_twist = f - p
+			fk.joint2cartesian(q_out, frame);
+			// calculate delta_twist = f - p
+			Vector6d delta_twist(frame-f_in):
 			// if delta_twist <= eps --> break
-			// inverse_velocity solver --> delta_q
-			// q_out += delta_q
+			if(delta_twist.norm() < eps) break;
+
+			// inverse_velocity solver --> delta_q (twist gives joint velocities)
+			q_out = q_out + delta_q
 			// check for joint limits and if exceeded set to joint limits
 		}
 	}

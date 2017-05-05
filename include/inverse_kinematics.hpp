@@ -15,7 +15,7 @@ namespace robo{
 		Eigen::VectorXd& dq;
 		unsigned int max_iter;
 		double eps;
-		Frame target;
+		Frame frame;
 
 
 		InverseKinematics(const Chain& chain_, const ForwardKinematics& fk_,
