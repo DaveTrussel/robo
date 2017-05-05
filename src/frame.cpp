@@ -1,5 +1,6 @@
 #include "../include/frame.hpp"
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 namespace robo {
 
@@ -43,6 +44,17 @@ namespace robo {
 	Frame operator *(const Frame& left, const Frame& rigth){
 			return Frame(left.orientation*rigth.origin+left.origin,
 						 left.orientation*rigth.orientation);
+	}
+
+	Vector6d operator -(const Frame& left, const Frame& right, const double dt=1.0){
+		Vector6d delta_twist;
+		delta_twist<3,1>(0,0) << left.origin - right.origin;
+		Matrix3d rotinvrot;
+		rotinvrot << left.orientation..inverse() * right.orientation; 
+		Eigen::AngleAxisd angle_axis(rotinvrot);
+		Eigen::Vector3d angular;
+		delta_twist<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); // TODO check if angle_axis.axis() is normalized or not
+		return delta_twist/dt;
 	}
 
 	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref){
