@@ -9,10 +9,17 @@ namespace robo{
 	class ForwardKinematics{
 	public:
 		Chain chain;
+		Frame f_end;
+		std::vector<Frame> joint_roots;
+		std::vector<Frame> joint_tips;
+		Eigen::MatrixXd jacobian;
+		Eigen::JacobiSVD<MatrixXd> svd;
 
 		ForwardKinematics(const Chain& chain);
 		
-		void joint2cartesian(const Eigen::VectorXd& q, std::vector<Frame>& f_out);
+		void joint_to_cartesian(const Eigen::VectorXd& q, std::vector<Frame>& f_out);
+
+		void calculate_jacobian(const Eigen::VectorXd& q);
 		
 	};
 

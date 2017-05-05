@@ -21,7 +21,7 @@ namespace robo{
 		InverseKinematics(const Chain& chain_, const ForwardKinematics& fk_,
 						  unsigned int max_iter_=100, double& eps_=1e-6);
 		
-		void cartesian2joint(const Frame f_in, const Eigen::VectorXd& q_start, 
+		void cartesian_to_joint(const Frame f_in, const Eigen::VectorXd& q_start, 
 		                     Eigen::VectorXd& q_out);
 	};
 }	

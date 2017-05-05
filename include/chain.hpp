@@ -10,6 +10,7 @@ namespace robo{
 	public:
 		unsigned int nr_joints;
 		unsigned int nr_links;
+
 		
 		std::vector<Link> links;
 

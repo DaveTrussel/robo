@@ -48,12 +48,12 @@ namespace robo {
 
 	Vector6d operator -(const Frame& left, const Frame& right){
 		Vector6d delta_twist;
-		delta_twist<3,1>(0,0) << left.origin - right.origin;
+		delta_twist.block<3,1>(0,0) << left.origin - right.origin;
 		Matrix3d rotinvrot;
 		rotinvrot << left.orientation..inverse() * right.orientation; 
 		Eigen::AngleAxisd angle_axis(rotinvrot);
 		Eigen::Vector3d angular;
-		delta_twist<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); // TODO check if angle_axis.axis() is normalized or not
+		delta_twist.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); // TODO check if angle_axis.axis() is normalized or not
 		return delta_twist;
 	}
 

@@ -8,7 +8,7 @@ namespace robo{
 	chain(chain_), nr_joints(chain_.nr_joints), fk(fk_), max_iter(max_iter_), eps(eps_) {}
 
 	
-	void ForwardKinematics::cartesian2joint(const Frame f_in, const Eigen::VectorXd& q_start, 
+	void InverseKinematics::cartesian_to_joint(const Frame f_in, const Eigen::VectorXd& q_start, 
 		                                    Eigen::VectorXd& q_out){
 		q_out = q_start;
 		for(int iter=0; iter<max_iter; iter++){
