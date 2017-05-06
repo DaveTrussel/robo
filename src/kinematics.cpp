@@ -114,7 +114,7 @@ namespace robo{
 		for(int iter_link=0; iter_link<chain.nr_links; iter_link++){
 			if (chain.links[iter_link].has_joint()) {
 				// compute twist of the end effector motion caused by joint [jointndx]; expressed in base frame, with vel. ref. point equal to the end effector
-				Vector6d unit_twist = joint_roots[iter_joint].orientation * chain.links[iter_link].twist(q(iter_joint), 1.0);
+				Vector6d unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0));
 				Vector6d end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
 				jacobian.block<6,1>(0, iter_joint) << end_twist;
 				iter_joint++;
