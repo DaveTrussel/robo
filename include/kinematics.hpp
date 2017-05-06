@@ -10,16 +10,18 @@ namespace robo{
 	public:
 		Chain chain;
 		Frame f_end;
-		VectorXd q;
+		Eigen::VectorXd q;
+		Eigen::VectorXd q_out;
 		std::vector<Frame> link_tips;
 		std::vector<Frame> joint_roots;
 		std::vector<Frame> joint_tips;
 		Eigen::MatrixXd jacobian;
-		Eigen::JacobiSVD<MatrixXd> svd;
+		Eigen::JacobiSVD<Eigen::MatrixXd> svd;
 		Vector6d L;
 		int max_iter;
 		double eps;
     	double eps_joints;
+    	int error;
 
     	static const int E_NO_ERROR = 					 1;
     	static const int E_JOINTS_GRADIENT_TOO_SMALL =  -1;
@@ -39,16 +41,16 @@ namespace robo{
 		
 		void joint_to_cartesian(const Eigen::VectorXd& q);
 
-		void cartesian_to_joint(const Frame& f_in, Eigen::VectorXd& q);
+		void cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
 
 		void calculate_jacobian(const Eigen::VectorXd& q);
 		
 	private:
-		VectorXd q_new;
-		VectorXq tmp;
-		VectorXq delta_q;
-		VectorXq grad;
-		VectorXq singular_vals; // TODO rename
+		Eigen::VectorXd q_new;
+		Eigen::VectorXq tmp;
+		Eigen::VectorXq delta_q;
+		Eigen::VectorXq grad;
+		Eigen::VectorXq singular_vals; // TODO rename
 	};
 
 }	

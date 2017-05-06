@@ -5,14 +5,14 @@ namespace robo{
 
 	Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_, double eps_joints_):
 	chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
-	jacobian(6, chain_.nr_joints), svd(6, nj,Eigen::ComputeThinU | Eigen::ComputeThinV),
+	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
 	max_iter(max_iter), eps(eps_), eps_joints(eps_joints_)
 	{
 		L << 1, 1, 1, 0.1, 0.1, 0.1;
 	}
 	Kinematics::Kinematics(const Chain& chain_, Vector6d L_, int max_iter_, double eps_, double eps_joints_):
 	chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
-	jacobian(6, chain_.nr_joints), svd(6, nj,Eigen::ComputeThinU | Eigen::ComputeThinV),
+	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
 	max_iter(max_iter), eps(eps_), eps_joints(eps_joints_), L(L_){}
 	
 	void Kinematics::joint_to_cartesian(const Eigen::VectorXd& q){
@@ -47,7 +47,7 @@ namespace robo{
 		joint_to_cartesian(q);
 		delta_twist = f_end - f_in;
 		delta_twist = L.asDiagonal() * delta_twist;
-		norm_delta_twist = delta_twist.norm()
+		norm_delta_twist = delta_twist.norm();
 		if(norm_delta_twist < esp){
 			delta_twist = f_end - f_in;
 			svd.compute(jacobian);
@@ -60,7 +60,7 @@ namespace robo{
 		double lambda = tau;
 		double dnorm = 1;
 
-		for(int i=0; i<max_iter, i++){
+		for(int i=0; i<max_iter; i++){
 			svd.compute(jacobian);
 			singular_vals = svd.singularValues();
 			for(int j=0; j<singular_vals.rows(); ++j){
@@ -70,13 +70,13 @@ namespace robo{
 			tmp = singular_vals.cwiseProduct(tmp);
 			delta_q = svd.matrixV() * tmp;
 			grad = jacobian.transpose() * delta_twist;
-			dnorm = diffq.lpNorm<Eigen::Infinity>();
+			dnorm = delta_q.lpNorm<Eigen::Infinity>();
 			// check for errors
 			if(dnorm < eps_joints){
-				return (error = E_JOINT_INCREMENT_TOO_SMALL);
+				return (error = E_JOINTS_INCREMENT_TOO_SMALL);
 			}
 			if(grad.transpose() * grad < eps_joints * eps_joints){
-				return (error = E_JONT_GRADIENT_TOO_SMALL);
+				return (error = E_JOINTS_GRADIENT_TOO_SMALL);
 			}
 
 			q_new = q + delta_q;
