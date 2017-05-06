@@ -88,7 +88,7 @@ namespace robo{
 			if (rho > 0) {
 				q               = q_new;
 				delta_twist       = delta_twist_new;
-				delta_twist_norm  = delta_twist_new_norm;
+				norm_delta_twist  = norm_delta_twist_new;
 				if (delta_twist_norm < eps) {
 					delta_twist = f_end - f_in;
 					q_out = q;
@@ -97,7 +97,7 @@ namespace robo{
 				calculate_jacobian(q_new);
 				jacobian = L.asDiagonal() * jacobian;
 				double tmp = 2 * rho - 1;
-				lambda = lambda * max(1 / 3.0, 1-tmp*tmp*tmp);
+				lambda = lambda * std::max(1 / 3.0, 1-tmp*tmp*tmp);
 				v = 2;
 			} 
 			else {

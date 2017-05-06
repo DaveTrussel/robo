@@ -41,9 +41,9 @@ namespace robo{
 		
 		void joint_to_cartesian(const Eigen::VectorXd& q);
 
-		void cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
+		int cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
 
-		int calculate_jacobian(const Eigen::VectorXd& q);
+		void calculate_jacobian(const Eigen::VectorXd& q);
 		
 	private:
 		Eigen::VectorXd q_new;
