@@ -48,7 +48,7 @@ namespace robo{
 		delta_twist = f_end - f_in;
 		delta_twist = L.asDiagonal() * delta_twist;
 		norm_delta_twist = delta_twist.norm();
-		if(norm_delta_twist < esp){
+		if(norm_delta_twist < eps){
 			delta_twist = f_end - f_in;
 			svd.compute(jacobian);
 			q_out = q;
@@ -89,7 +89,7 @@ namespace robo{
 				q               = q_new;
 				delta_twist       = delta_twist_new;
 				norm_delta_twist  = norm_delta_twist_new;
-				if (delta_twist_norm < eps) {
+				if (norm_delta_twist < eps) {
 					delta_twist = f_end - f_in;
 					q_out = q;
 					return (error = E_NO_ERROR);
@@ -115,7 +115,7 @@ namespace robo{
 			if (chain.links[iter_link].has_joint()) {
 				// compute twist of the end effector motion caused by joint [jointndx]; expressed in base frame, with vel. ref. point equal to the end effector
 				Vector6d unit_twist = joint_roots[iter_joint].orientation * chain.links[iter_link].twist(q(iter_joint), 1.0);
-				Vector6d end_twist = change_twist_reference(unit_twist, f_end - joint_tips[iter_joint].origin);
+				Vector6d end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
 				jacobian.block<6,1>(0, iter_joint) << end_twist;
 				iter_joint++;
 			}

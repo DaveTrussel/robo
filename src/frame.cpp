@@ -41,11 +41,22 @@ namespace robo {
 	    return origin + orientation*arg;
 	}
 
+	// Frame * Frame
 	Frame operator *(const Frame& left, const Frame& rigth){
 			return Frame(left.orientation*rigth.origin+left.origin,
 						 left.orientation*rigth.orientation);
 	}
 
+	// RotationMatrix * Twist
+	Vector6d operator *(const Eigen::Matrix3d& rot, const Vector6d& twist){
+		Vector6d twist_new;
+		twist_new.block<3,1>(0,0) << rot * twist.block<3,1>(0,0);
+		twist_new.block<3,1>(3,0) << rot * twist.block<3,1>(3,0);
+		return twist_new;
+
+	}
+
+	// Frame - Frame
 	Vector6d operator -(const Frame& left, const Frame& right){
 		Vector6d delta_twist;
 		delta_twist.block<3,1>(0,0) << left.origin - right.origin;
