@@ -71,9 +71,10 @@ int main () {
  	Eigen::VectorXd q_init(chain.nr_joints);
  	q_init << 0.5, 0.5, 0.5, 0.5, 0.5, 0.5;
  	TimePoint tic = now();
- 	fk.cartesian_to_joint(f_target, q_init);
+ 	int error_code = fk.cartesian_to_joint(f_target, q_init);
  	TimePoint toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
  	cout << "Solved inverse kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Robot joint positions:" << endl << chain.q_out << endl;
+ 	cout << "With error code:" << endl << error_code << endl;
  } 
