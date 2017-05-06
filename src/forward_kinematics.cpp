@@ -1,14 +1,14 @@
-#include "../include/forward_kinematics.hpp"
+#include "../include/kinematics.hpp"
 #include <Eigen/Dense>
 
 namespace robo{
 
-	ForwardKinematics::ForwardKinematics(const Chain& chain_):
+	Kinematics::Kinematics(const Chain& chain_):
 	chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
 	jacobian(6, chain_.nr_joints), svd(6, nj,Eigen::ComputeThinU | Eigen::ComputeThinV)
 	{}
 	
-	void ForwardKinematics::joint_to_cartesian(const Eigen::VectorXd& q, std::vector<Frame>& f_out){
+	void Kinematics::joint_to_cartesian(const Eigen::VectorXd& q, std::vector<Frame>& f_out){
 		// init
 		int iter_joint = 0;
 		f_end = Frame();
@@ -26,7 +26,7 @@ namespace robo{
 		}
 	}
 
-	void ForwardKinematics::calculate_jacobian(const Eigen::VectorXd& q){
+	void Kinematics::calculate_jacobian(const Eigen::VectorXd& q){
 		int iter_joint = 0;
 		for(int iter_link=0; iter_link<chain.nr_links; iter_link++){
 			if (chain.links[iter_link].has_joint()) {

@@ -2,7 +2,7 @@
 #include "../include/link.hpp"
 #include "../include/joint.hpp"
 #include "../include/frame.hpp"
-#include "../include/forward_kinematics.hpp"
+#include "../include/kinematics.hpp"
 
 #include <Eigen/Dense>
 
@@ -51,7 +51,7 @@ int main () {
 	chain.addLink(link_5);
 	chain.addLink(link_6);
  	
- 	ForwardKinematics fk = ForwardKinematics(chain);
+ 	ForwardKinematics fk = Kinematics(chain);
  	Eigen::VectorXd q(chain.nr_joints);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
  	std::vector<Frame> f_out(chain.nr_links);

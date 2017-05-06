@@ -6,7 +6,7 @@
 
 namespace robo{
 
-	class ForwardKinematics{
+	class Kinematics{
 	public:
 		Chain chain;
 		Frame f_end;
@@ -15,7 +15,7 @@ namespace robo{
 		Eigen::MatrixXd jacobian;
 		Eigen::JacobiSVD<MatrixXd> svd;
 
-		ForwardKinematics(const Chain& chain);
+		Kinematics(const Chain& chain);
 		
 		void joint_to_cartesian(const Eigen::VectorXd& q, std::vector<Frame>& f_out);
 
