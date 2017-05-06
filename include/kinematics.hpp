@@ -32,8 +32,7 @@ namespace robo{
 				   double eps=1e-5,
 				   double eps_joints=1e-10);
 
-		Kinematics(const Chain& chain,
-				   Vector6d L,
+		Kinematics(const Chain& chain, Vector6d L,
 				   int max_iter=500,
 				   double eps=1e-5,
 				   double eps_joints=1e-10);

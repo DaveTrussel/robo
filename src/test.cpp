@@ -54,18 +54,26 @@ int main () {
  	ForwardKinematics fk = Kinematics(chain);
  	Eigen::VectorXd q(chain.nr_joints);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
- 	std::vector<Frame> f_out(chain.nr_links);
  	Eigen::VectorXd dq(chain.nr_joints);
  	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
 
- 	cout << "DEBUG: Link twist:" << endl << link_4.twist(0.5, 0.7); << endl;
 
  	TimePoint tic = now();
- 	fk.joint2cartesian(q, f_out);
+ 	fk.joint2cartesian(q);
  	TimePoint toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
- 	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
- 	cout << endl << "As a homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
- 	cout << endl << "It's nautical_angles:" << endl << f_out.at(chain.nr_links-1).nautical_angles() << endl;
+ 	cout << "Frame at end of robot chain:" << endl << chain.f_end.origin << endl << chain.f_end.orientation << endl;
+ 	cout << endl << "As a homogeneous matrix:" << endl << chain.f_end.as_homogeneous_matrix() << endl;
+ 	cout << endl << "It's nautical_angles:" << endl << chain.f_end.nautical_angles() << endl;
+
+ 	Frame f_target = chain.f_end;
+ 	Eigen::VectorXd q_init(chain.nr_joints);
+ 	q_init << 0.5, 0.5, 0.5, 0.5, 0.5, 0.5;
+ 	TimePoint tic = now();
+ 	fk.cartesian_to_joint(f_target, q_init);
+ 	TimePoint toc = now();
+ 	auto duration = duration_cast<microseconds>( toc - tic ).count();
+ 	cout << "Solved inverse kinematics in: " << duration << " Microseconds." << endl;
+ 	cout << "Robot joint positions:" << endl << chain.q_out << endl;
  } 
