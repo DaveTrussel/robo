@@ -18,7 +18,14 @@ using namespace std::chrono;
 #define now() high_resolution_clock::now()
 typedef high_resolution_clock::time_point TimePoint;
 
+double my_rand(){
+    int r = std::rand() % 314;
+    return ((double)r)/100.0 - 1.57;
+}
+
 int main () {
+     std::srand(std::time(0));
+
 	Eigen::Vector3d axis_z, axis_y;
 	
 	axis_y << 0.0, 1.0, 0.0;
@@ -74,7 +81,7 @@ int main () {
 
  	Frame f_target = kin.f_end;
  	Eigen::VectorXd q_init(chain.nr_joints);
-    q_init << 1.5, -0.5, 2.5, 0.5, -0.5, 0.5;
+    q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
  	tic = now();
  	kin.joint_to_cartesian(q_init);
  	int error_code = kin.cartesian_to_joint(f_target, q_init);
