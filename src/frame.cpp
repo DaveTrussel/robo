@@ -37,13 +37,13 @@ namespace robo {
 	}
 
 	// Operators
-	Frame& Frame::operator =(const Frame& other){
-		if(this != &other){
-			origin = other.origin;
-			orientation = other.orientation;
-		}
-		return *this;
-	}
+    Frame& Frame::operator =(const Frame& other){
+        if(this != &other){
+            origin = other.origin;
+            orientation = other.orientation;
+        }
+        return *this;
+    }
 
 	Eigen::Vector3d Frame::operator *(const Eigen::Vector3d & arg) const{
 	    return origin + orientation*arg;

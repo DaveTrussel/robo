@@ -4,14 +4,14 @@
 namespace robo{
 
 	Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_, double eps_joints_):
-	chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
+    chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
 	max_iter(max_iter), eps(eps_), eps_joints(eps_joints_)
 	{
 		L << 1, 1, 1, 0.1, 0.1, 0.1;
 	}
 	Kinematics::Kinematics(const Chain& chain_, Vector6d L_, int max_iter_, double eps_, double eps_joints_):
-	chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
+    chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
 	max_iter(max_iter), eps(eps_), eps_joints(eps_joints_), L(L_){}
 	
@@ -80,7 +80,7 @@ namespace robo{
 			}
 
 			q_new = q + delta_q;
-			joint_to_cartesian(q);
+            joint_to_cartesian(q_new);
 			delta_twist_new = f_end - f_in;
 			norm_delta_twist_new = delta_twist_new.norm();
 			rho = norm_delta_twist * norm_delta_twist - norm_delta_twist_new * norm_delta_twist_new;
@@ -105,8 +105,8 @@ namespace robo{
 				v      = 2 * v;
 			}
 			q_out = q;
-			return (error = E_MAX_ITERATIONS);
 		}
+        return (error = E_MAX_ITERATIONS);
 	}
 
 	void Kinematics::calculate_jacobian(const Eigen::VectorXd& q){

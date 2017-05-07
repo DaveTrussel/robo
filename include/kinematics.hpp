@@ -31,13 +31,13 @@ namespace robo{
 
 		Kinematics(const Chain& chain,
 				   int max_iter=500,
-				   double eps=1e-5,
-				   double eps_joints=1e-10);
+                   double eps=1e-4,
+                   double eps_joints=1e-15);
 
 		Kinematics(const Chain& chain, Vector6d L,
 				   int max_iter=500,
-				   double eps=1e-5,
-				   double eps_joints=1e-10);
+                   double eps=1e-4,
+                   double eps_joints=1e-15);
 		
 		void joint_to_cartesian(const Eigen::VectorXd& q);
 

@@ -33,6 +33,8 @@ int main () {
 	Eigen::Vector3d length;
 	length << 0.0, 0.0, 1.0;
 	Frame tip = Frame(length);
+    Frame i_want_a_copy;
+    i_want_a_copy = tip;
 	
 	Link link_0 = Link(0, joint_none, tip);
 	Link link_1 = Link(1, joint_wrist, tip);
@@ -67,10 +69,14 @@ int main () {
  	cout << endl << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl;
  	cout << endl << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
 
+    kin.calculate_jacobian(q);
+    cout << "Calculated jacobian: " << endl << kin.jacobian << endl;
+
  	Frame f_target = kin.f_end;
  	Eigen::VectorXd q_init(chain.nr_joints);
- 	q_init << 0.5, 0.5, 0.5, 0.5, 0.5, 0.5;
+    q_init << 0.2, 0.2, 0.2, 0.2, 0.2, 0.2;
  	tic = now();
+ 	kin.joint_to_cartesian(q_init);
  	int error_code = kin.cartesian_to_joint(f_target, q_init);
  	toc = now();
  	duration = duration_cast<microseconds>( toc - tic ).count();
