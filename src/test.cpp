@@ -74,7 +74,7 @@ int main () {
 
  	Frame f_target = kin.f_end;
  	Eigen::VectorXd q_init(chain.nr_joints);
-    q_init << 0.2, 0.2, 0.2, 0.2, 0.2, 0.2;
+    q_init << 1.5, -0.5, 2.5, 0.5, -0.5, 0.5;
  	tic = now();
  	kin.joint_to_cartesian(q_init);
  	int error_code = kin.cartesian_to_joint(f_target, q_init);
@@ -83,4 +83,6 @@ int main () {
  	cout << "Solved inverse kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Robot joint positions:" << endl << kin.q_out << endl;
  	cout << "With error code:" << endl << error_code << endl;
+    kin.joint_to_cartesian(kin.q_out);
+    cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
  } 
