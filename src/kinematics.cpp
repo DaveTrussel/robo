@@ -106,6 +106,7 @@ namespace robo{
 			}
 			q_out = q;
 		}
+        q_out = q;
         return (error = E_MAX_ITERATIONS);
 	}
 
