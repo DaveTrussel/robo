@@ -11,7 +11,8 @@ namespace robo {
 	}
 	
 	Vector6d Link::twist(const double& q, const double &dq)const{
-		return Vector6d(); // TODO
+		Eigen::Vector3d ref_point = joint.pose(q).orientation * tip.origin;
+		return change_twist_reference(joint.twist(dq), ref_point);
 	}
 	
 	bool Link::has_joint() const{

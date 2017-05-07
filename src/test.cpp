@@ -2,7 +2,7 @@
 #include "../include/link.hpp"
 #include "../include/joint.hpp"
 #include "../include/frame.hpp"
-#include "../include/forward_kinematics.hpp"
+#include "../include/kinematics.hpp"
 
 #include <Eigen/Dense>
 
@@ -18,7 +18,14 @@ using namespace std::chrono;
 #define now() high_resolution_clock::now()
 typedef high_resolution_clock::time_point TimePoint;
 
+double my_rand(){
+    int r = std::rand() % 314;
+    return ((double)r)/100.0 - 1.57;
+}
+
 int main () {
+     std::srand(std::time(0));
+
 	Eigen::Vector3d axis_z, axis_y;
 	
 	axis_y << 0.0, 1.0, 0.0;
@@ -33,6 +40,8 @@ int main () {
 	Eigen::Vector3d length;
 	length << 0.0, 0.0, 1.0;
 	Frame tip = Frame(length);
+    Frame i_want_a_copy;
+    i_want_a_copy = tip;
 	
 	Link link_0 = Link(0, joint_none, tip);
 	Link link_1 = Link(1, joint_wrist, tip);
@@ -51,15 +60,36 @@ int main () {
 	chain.addLink(link_5);
 	chain.addLink(link_6);
  	
- 	ForwardKinematics fk = ForwardKinematics(chain);
+ 	Kinematics kin = Kinematics(chain);
  	Eigen::VectorXd q(chain.nr_joints);
  	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
- 	std::vector<Frame> f_out(chain.nr_links);
+ 	Eigen::VectorXd dq(chain.nr_joints);
+ 	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+
+
  	TimePoint tic = now();
- 	fk.joint2cartesian(q, f_out);
+ 	kin.joint_to_cartesian(q);
  	TimePoint toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
- 	cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
- 	cout << endl << "As a homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
+ 	cout << "Frame at end of robot chain:" << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
+ 	cout << endl << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl;
+ 	cout << endl << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
+
+    kin.calculate_jacobian(q);
+    cout << "Calculated jacobian: " << endl << kin.jacobian << endl;
+
+ 	Frame f_target = kin.f_end;
+ 	Eigen::VectorXd q_init(chain.nr_joints);
+    q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 	tic = now();
+ 	kin.joint_to_cartesian(q_init);
+ 	int error_code = kin.cartesian_to_joint(f_target, q_init);
+ 	toc = now();
+ 	duration = duration_cast<microseconds>( toc - tic ).count();
+ 	cout << "Solved inverse kinematics in: " << duration << " Microseconds." << endl;
+ 	cout << "Robot joint positions:" << endl << kin.q_out << endl;
+ 	cout << "With error code:" << endl << error_code << endl;
+    kin.joint_to_cartesian(kin.q_out);
+    cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
  } 

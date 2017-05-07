@@ -4,6 +4,8 @@
 
 namespace robo {
 
+	typedef Eigen::Matrix< double, 6, 1 > Vector6d;
+
 	class Frame{
 	public:
 
@@ -22,10 +24,18 @@ namespace robo {
 
 		// Member functions
 		Eigen::Matrix4d as_homogeneous_matrix()const;
+		Eigen::Vector3d nautical_angles()const;
 
 		// Operators
+		Frame& operator =(const Frame& other);
 		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;
 	};
 
 	Frame operator *(const Frame& left, const Frame& rigth);
+
+	Vector6d operator -(const Frame& left, const Frame& right);
+
+	Vector6d rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist);
+
+	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref);
 }
