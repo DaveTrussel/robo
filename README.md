@@ -102,7 +102,7 @@ cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-
 ## TODO
 - Basic model (Frames, Joints, Links, Chain)  :white_check_mark:
 - Forward Kinematics (joint coordinates to cartesian coordinates)  :white_check_mark:
-- Inverse Kinematics (cartesian coordinates to joint coordinates)
+- Inverse Kinematics (cartesian coordinates to joint coordinates) (First implementation done. However check this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) for improvement in performance and success rate. Also implement joint limits.)
 - Dynamic Model (Positions, Velocities, Torques -> Accelerations)
 - Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques)
 
