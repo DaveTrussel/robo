@@ -3,6 +3,7 @@
 
 namespace robo{
 
+	// Constructors
 	Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_, double eps_joints_):
     chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
@@ -15,8 +16,8 @@ namespace robo{
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
     max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_), L(L_){}
 	
+	// Member functions
 	void Kinematics::joint_to_cartesian(const Eigen::VectorXd& q){
-		// init
 		int iter_joint = 0;
 		f_end = Frame();
 		for(int iter_link=0; iter_link<chain.nr_links; iter_link++){
@@ -34,12 +35,6 @@ namespace robo{
 	}
 
 	int Kinematics::cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init){
-		double v      = 2;
-		double tau    = 10;
-		double rho;
-		double norm_delta_twist;
-		double norm_delta_twist_new;
-		Vector6d twist;
 		Vector6d delta_twist;
 		Vector6d delta_twist_new;
 
@@ -47,7 +42,7 @@ namespace robo{
 		joint_to_cartesian(q);
 		delta_twist = f_end - f_in;
 		delta_twist = L.asDiagonal() * delta_twist;
-		norm_delta_twist = delta_twist.norm();
+		double norm_delta_twist = delta_twist.norm();
 		if(norm_delta_twist < eps){
 			delta_twist = f_end - f_in;
 			svd.compute(jacobian);
@@ -57,8 +52,10 @@ namespace robo{
 		calculate_jacobian(q);
 		jacobian = L.asDiagonal() * jacobian;
 
-		double lambda = tau;
+		double lambda = 10;
 		double dnorm = 1;
+		double norm_delta_twist_new;
+		double rho;
 
 		for(int i=0; i<max_iter; i++){
 			svd.compute(jacobian);
@@ -86,9 +83,9 @@ namespace robo{
 			rho = norm_delta_twist * norm_delta_twist - norm_delta_twist_new * norm_delta_twist_new;
 			rho /= delta_q.transpose() * (lambda * delta_q + grad);
 			if (rho > 0) {
-				q               = q_new;
-				delta_twist       = delta_twist_new;
-				norm_delta_twist  = norm_delta_twist_new;
+				q = q_new;
+				delta_twist = delta_twist_new;
+				norm_delta_twist = norm_delta_twist_new;
 				if (norm_delta_twist < eps) {
 					delta_twist = f_end - f_in;
 					q_out = q;
@@ -112,13 +109,13 @@ namespace robo{
 
 	void Kinematics::calculate_jacobian(const Eigen::VectorXd& q){
 		int iter_joint = 0;
-		for(int iter_link=0; iter_link<chain.nr_links; iter_link++){
+		for(int iter_link=0; iter_link<chain.nr_links; ++iter_link){
 			if (chain.links[iter_link].has_joint()) {
 				// compute twist of the end effector motion caused by joint [jointndx]; expressed in base frame, with vel. ref. point equal to the end effector
 				Vector6d unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0));
 				Vector6d end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
 				jacobian.block<6,1>(0, iter_joint) << end_twist;
-				iter_joint++;
+				++iter_joint;
 			}
 		}
 	}

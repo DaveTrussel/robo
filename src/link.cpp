@@ -3,9 +3,11 @@
 
 namespace robo {
 
+	// Constructors
 	Link::Link(int id_in, const Joint& joint_in, const Frame& tip_in):
 		id(id_in), joint(joint_in), tip(tip_in){}
 
+	// Member functions
 	Frame Link::pose(const double& q)const{
 		return joint.pose(q)*tip;
 	}

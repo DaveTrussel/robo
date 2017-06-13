@@ -4,7 +4,7 @@
 
 namespace robo {
 
-	// Constructorr
+	// Constructors
 	Frame::Frame(const Eigen::Vector3d& vec, const Eigen::Matrix3d& rot):
 		origin(vec), orientation(rot){}
 
