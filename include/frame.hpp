@@ -29,6 +29,11 @@ namespace robo {
 		Eigen::Matrix4d as_homogeneous_matrix()const;
 		
 		Eigen::Vector3d nautical_angles()const;
+
+		// Operators
+		Frame& operator =(const Frame& other);
+		
+		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;
 	};
 
 	Frame operator *(const Frame& left, const Frame& rigth);
