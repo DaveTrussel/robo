@@ -37,7 +37,6 @@ namespace robo{
 	int Kinematics::cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init){
 		Vector6d delta_twist;
 		Vector6d delta_twist_new;
-
 		q = q_init;
 		joint_to_cartesian(q);
 		delta_twist = f_end - f_in;
@@ -52,6 +51,7 @@ namespace robo{
 		calculate_jacobian(q);
 		jacobian = L.asDiagonal() * jacobian;
 
+		double v = 2;
 		double lambda = 10;
 		double dnorm = 1;
 		double norm_delta_twist_new;
