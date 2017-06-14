@@ -1,5 +1,6 @@
 #include "../include/kinematics.hpp"
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace robo{
 
@@ -11,11 +12,11 @@ namespace robo{
 	{
 		weights_IK << 1, 1, 1, 0.1, 0.1, 0.1;
 	}
-	
-	Kinematics::Kinematics(const Chain& chain_, Vector6d weigths_IK_, int max_iter_, double eps_, double eps_joints_):
+
+	Kinematics::Kinematics(const Chain& chain_, Vector6d weights_IK_, int max_iter_, double eps_, double eps_joints_):
     chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
-    max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_), weights_IK(weigths_IK_){}
+    max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_), weights_IK(weights_IK_){}
 	
 	// Member functions
 	void Kinematics::joint_to_cartesian(const Eigen::VectorXd& q){
@@ -41,18 +42,18 @@ namespace robo{
 		q = q_init;
 		joint_to_cartesian(q);
 		delta_twist = f_end - f_in;
-		delta_twist = weigths_IK.asDiagonal() * delta_twist;
+		delta_twist = weights_IK.asDiagonal() * delta_twist;
 		double norm_delta_twist = delta_twist.norm();
 		calculate_jacobian(q);
 		
+		// check if position already within specified tolerance
 		if(norm_delta_twist < eps){
 			delta_twist = f_end - f_in;
-			svd.compute(jacobian);
 			q_out = q;
 			return (error = E_NO_ERROR);
 		}
 		
-		Eigen::MatrixXd jacobian_weighted = weigths_IK.asDiagonal() * jacobian;
+		Eigen::MatrixXd jacobian_weighted = weights_IK.asDiagonal() * jacobian;
 
 		double step_multiplier = 2;
 		double lambda = 10;
@@ -61,7 +62,7 @@ namespace robo{
 		double rho;
 
 		for(int i=0; i<max_iter; ++i){
-			svd.compute(jacobian_weighted);
+			svd.compute(jacobian_weighted); // TODO Profiling showed this function call is very expensive is there a cheaper alternative? 
 			singular_vals = svd.singularValues();
 			for(int j=0; j<singular_vals.rows(); ++j){
 				singular_vals(j) = singular_vals(j) / (singular_vals(j) * singular_vals(j) + lambda);
@@ -89,13 +90,14 @@ namespace robo{
 				q = q_new;
 				delta_twist = delta_twist_new;
 				norm_delta_twist = norm_delta_twist_new;
+				std::cout << "DEBUG: Norm delta_twist: " << norm_delta_twist << " at iter: " << i << std::endl;
 				if (norm_delta_twist < eps) {
 					delta_twist = f_end - f_in;
 					q_out = q;
 					return (error = E_NO_ERROR);
 				}
 				calculate_jacobian(q_new);
-				jacobian_weighted = weigths_IK.asDiagonal() * jacobian;
+				jacobian_weighted = weights_IK.asDiagonal() * jacobian;
 				double tmp = 2 * rho - 1;
 				lambda = lambda * std::max(1 / 3.0, 1-tmp*tmp*tmp);
 				step_multiplier = 2;

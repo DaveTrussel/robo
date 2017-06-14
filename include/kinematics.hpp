@@ -11,7 +11,7 @@ namespace robo{
 		// Members
 		Chain chain;
 		Frame f_end; // frame at the end of the chain 
-		Eigen::VectorXd q_out; // result of inverse kinematics is stored here
+		Eigen::VectorXd q_out; // result of inverse kinematics
 		std::vector<Frame> link_tips; // Frames at end of each link
 		Eigen::MatrixXd jacobian;
 		Vector6d weights_IK; // weigths of the IK algorithm (3 position and 3 orientation)
@@ -19,6 +19,7 @@ namespace robo{
 		double eps;
     	double eps_joints;
     	int error;
+    	// TODO member to easily check the weighted error norm
 
     	// Error code constants 
     	// TODO make this an enum class for clarity e.g. InvKinStatus::no_error?
@@ -30,13 +31,13 @@ namespace robo{
     	// Constructors
 		Kinematics(const Chain& chain,
                    int max_iter=500,
-                   double eps=1e-6,
-                   double eps_joints=1e-16);
+                   double eps=1e-3,
+                   double eps_joints=1e-21);
 
 		Kinematics(const Chain& chain, Vector6d weights_IK,
                    int max_iter=500,
-                   double eps=1e-6,
-                   double eps_joints=1e-16);
+                   double eps=1e-3,
+                   double eps_joints=1e-21);
 		
 		// Member functions
 		void joint_to_cartesian(const Eigen::VectorXd& q);
@@ -47,7 +48,7 @@ namespace robo{
 
 		int cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
 		/**
-		* Calculates the inverse kinematics
+		* Calculates the inverse kinematics (using a Levenberg-Marquardt algorithm)
 		* The result is stored in q_out
 		* Check the return value to see if the solver was sucessfull 
 		*/

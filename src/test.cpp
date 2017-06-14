@@ -16,7 +16,6 @@ using namespace std;
 using namespace std::chrono;
 
 #define now() high_resolution_clock::now()
-typedef high_resolution_clock::time_point TimePoint;
 
 double my_rand(){
     int r = std::rand() % 314;
@@ -24,7 +23,8 @@ double my_rand(){
 }
 
 int main () {
-     std::srand(std::time(0));
+
+    std::srand(std::time(0));
 
 	Eigen::Vector3d axis_z, axis_y;
 	
@@ -62,34 +62,50 @@ int main () {
  	
  	Kinematics kin = Kinematics(chain);
  	Eigen::VectorXd q(chain.nr_joints);
- 	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+ 	q << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 	
+ 	Eigen::VectorXd q_init(chain.nr_joints);
+    q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 	
  	Eigen::VectorXd dq(chain.nr_joints);
  	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
 
+ 	cout << "Desired position: " << endl << q << endl;
+ 	cout << "Inital position: " << endl << q_init << endl;
 
- 	TimePoint tic = now();
+ 	auto tic = now();
  	kin.joint_to_cartesian(q);
- 	TimePoint toc = now();
+ 	auto toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
+ 	
  	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Frame at end of robot chain:" << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
  	cout << endl << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl;
  	cout << endl << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
 
+ 	tic = now();
     kin.calculate_jacobian(q);
-    cout << "Calculated jacobian: " << endl << kin.jacobian << endl;
+    toc = now();
+    duration = duration_cast<microseconds>( toc - tic ).count();
+    cout << "Calculated jacobian in: " << duration << " Microseconds." << endl;
+    cout << "Jacobian: " << endl << kin.jacobian << endl;
 
  	Frame f_target = kin.f_end;
- 	Eigen::VectorXd q_init(chain.nr_joints);
-    q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
  	tic = now();
  	kin.joint_to_cartesian(q_init);
  	int error_code = kin.cartesian_to_joint(f_target, q_init);
  	toc = now();
  	duration = duration_cast<microseconds>( toc - tic ).count();
+ 	
  	cout << "Solved inverse kinematics in: " << duration << " Microseconds." << endl;
  	cout << "Robot joint positions:" << endl << kin.q_out << endl;
  	cout << "With error code:" << endl << error_code << endl;
+    
     kin.joint_to_cartesian(kin.q_out);
+    
     cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
+    cout << "Error to target (cartesian): " << endl << kin.f_end - f_target << endl;
+ 	
+ 	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 tests.
+
  } 
