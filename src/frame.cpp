@@ -67,8 +67,9 @@ namespace robo {
 		return delta_twist;
 	}
 
-
+	////////////////////////////////////////////////////////////////
 	// TODO this got out of hand, create own Twist and Wrench class
+	////////////////////////////////////////////////////////////////
 	Vector6d rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist){
 		Vector6d twist_new;
 		twist_new.block<3,1>(0,0) << rot * Eigen::Vector3d(twist.block<3,1>(0,0));
@@ -86,9 +87,8 @@ namespace robo {
 
 	Vector6d multiply_twists(const Vector6d& rhs, const Vector6d& lhs){
 		Vector6d twist_new;
-		twist_new.block<3,1>(0,0) << lhs.block<3,1>(3,0)*rhs.block<3,1>(0,0) + lhs.block<3,1>(0,0)*rhs.block<3,1>(3,0);
-		twist_new.block<3,1>(3,0) << lhs.block<3,1>(3,0)*rhs.block<3,1>(3,0);
-
-		return Twist(lhs.rot*rhs.vel+lhs.vel*rhs.rot,lhs.rot*rhs.rot);
+		twist_new.block<3,1>(0,0) << lhs.block<3,1>(3,0).cross(rhs.block<3,1>(0,0)) + lhs.block<3,1>(0,0).cross(rhs.block<3,1>(3,0));
+		twist_new.block<3,1>(3,0) << lhs.block<3,1>(3,0).cross(rhs.block<3,1>(3,0));
+		return twist_new;
 	}
 }
