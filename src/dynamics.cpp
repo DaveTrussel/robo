@@ -33,8 +33,8 @@ namespace robo{
 
 			// calculate twist and unit twist in current link frame
 			to_link_rot = link_frames[iter_link].orientation.inverse();
-			link_twist = to_link_rot * chain.links[iter_link].twist(q, dq);
-			unit_twists[iter_link] = to_link_rot * chain.links[iter_link].twist(q, 1.0);
+			link_twist = rotate_twist(to_link_rot, chain.links[iter_link].twist(q, dq));
+			unit_twists[iter_link] = rotate_twist(to_link_rot, chain.links[iter_link].twist(q, 1.0));
 
 			// calculate velocity anc acceleration in current link frame
 			if(iter_link=0){
@@ -55,7 +55,7 @@ namespace robo{
 		}
 
 		// Back from tip to root
-		int iter_joint = chain.nr_joints;
+		iter_joint = chain.nr_joints;
 		for(int iter_link=chain.nr_links-1; iter_link>=0; --iter_link){
 			if(chain.links[iter_link].has_joint()){
 				// TODO calculate torque (unit twist * wrench)
