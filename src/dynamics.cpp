@@ -45,7 +45,7 @@ namespace robo{
 			}
 			else{
 				velocities[iter_link] = rotate_twist(to_link_rot, velocities[iter_link-1]) + link_twist;
-				accelerations[iter_link] = rotate_twist(to_link_rot, accelearations[iter_link-1]) +
+				accelerations[iter_link] = rotate_twist(to_link_rot, accelerations[iter_link-1]) +
 										   accelerations[iter_link-1] * ddq +
 										   multiply_twists(velocities[iter_link], link_twist);
 			}
