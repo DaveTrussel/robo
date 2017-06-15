@@ -3,29 +3,21 @@
 
 namespace robo {
 
-	class Twist{
-	public:
+	// Constructors
+	Twist::Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){}
+	
+	Twist::Twist(const Eigen::Vector3d& lin): linear(lin), rotation(rot){}
+	
+	Twist::Twist(): linear(Vector3d()), rotation(Vector3d()){}
 
-		// Members
-		Eigen::Vector3d linear;
-		Eigen::Vector3d rotation;
-
-		// Constructors
-		Twist::Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){}
-		
-		Twist::Twist(const Eigen::Vector3d& lin): linear(lin), rotation(rot){}
-		
-		Twist::Twist(): linear(Vector3d()), rotation(Vector3d()){}
-
-		// Operators
-		Twist& Twist::operator =(const Twist& other){
-	        if(this != &other){
-	            linear = other.linear;
-	            rotation = other.rotation;
-	        }
-	        return *this;
-    	}
-	};
+	// Operators
+	Twist& Twist::operator =(const Twist& other){
+        if(this != &other){
+            linear = other.linear;
+            rotation = other.rotation;
+        }
+        return *this;
+	}
 
 
 	Twist rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist){

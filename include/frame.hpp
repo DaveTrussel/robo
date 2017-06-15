@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../include/twist.hpp"
 #include <Eigen/Dense>
 
 namespace robo {
@@ -37,6 +38,8 @@ namespace robo {
 	};
 
 	Frame operator *(const Frame& left, const Frame& rigth);
+
+	Twist operator -(const Frame& left, const Frame& right);
 
 	Vector6d operator -(const Frame& left, const Frame& right);
 
