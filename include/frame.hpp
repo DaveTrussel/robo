@@ -43,4 +43,6 @@ namespace robo {
 	Vector6d rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist);
 
 	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref);
+
+	Vector6d multiply_twists(const Vector6d& rhs, const Vector6d& lhs);
 }

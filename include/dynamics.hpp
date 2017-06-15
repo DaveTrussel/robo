@@ -9,14 +9,14 @@ namespace robo{
 	class Dynamics{
 	public:
 		// Members
-		VectorXd joint_torques;
+		Eigen::VectorXd joint_torques;
 
     	// Constructors
 		Dynamics(const Chain& chain);
 		
 		// Member functions
 		int calculate_torques(const Eigen::VectorXd& q, const Eigen::VectorXd& dq,
-							  const Eigen::VectorXd& ddq, const Eigen::Vector3d& gravity)
+							  const Eigen::VectorXd& ddq, const Eigen::Vector3d& gravity);
 	private:
 		// Members
 		Chain chain;

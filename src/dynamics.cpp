@@ -25,7 +25,7 @@ namespace robo{
 				++iter_joint;
 			}
 			else{
-				q = dq = ddq = 0.0
+				q = dq = ddq = 0.0;
 			}
 
 			// calculate frame of current link
@@ -37,7 +37,7 @@ namespace robo{
 			unit_twists[iter_link] = rotate_twist(to_link_rot, chain.links[iter_link].twist(q, 1.0));
 
 			// calculate velocity anc acceleration in current link frame
-			if(iter_link=0){
+			if(iter_link==0){
 				velocities[iter_link] = link_twist;
 				accelerations[iter_link] = rotate_twist(to_link_rot, gravity) +
 										   unit_twists[iter_link] * ddq +
@@ -46,7 +46,7 @@ namespace robo{
 			else{
 				velocities[iter_link] = rotate_twist(to_link_rot, velocities[iter_link-1]) + link_twist;
 				accelerations[iter_link] = rotate_twist(to_link_rot, accelearations[iter_link-1]) +
-										   accelearations[iter_link-1]iter_link] * ddq +
+										   accelerations[iter_link-1] * ddq +
 										   multiply_twists(velocities[iter_link], link_twist);
 			}
 
