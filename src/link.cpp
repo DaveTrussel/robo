@@ -1,5 +1,6 @@
+#pragma once
+
 #include "../include/link.hpp"
-#include "../include/frame.hpp"
 
 namespace robo {
 
@@ -12,7 +13,7 @@ namespace robo {
 		return joint.pose(q)*tip;
 	}
 	
-	Vector6d Link::twist(const double& q, const double &dq)const{
+	Twist Link::twist(const double& q, const double &dq)const{
 		Eigen::Vector3d ref_point = joint.pose(q).orientation * tip.origin;
 		return change_twist_reference(joint.twist(dq), ref_point);
 	}
