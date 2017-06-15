@@ -11,6 +11,7 @@ namespace robo{
 	{
 		L << 1, 1, 1, 0.1, 0.1, 0.1;
 	}
+
 	Kinematics::Kinematics(const Chain& chain_, Vector6d L_, int max_iter_, double eps_, double eps_joints_):
     chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
 	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
@@ -35,8 +36,8 @@ namespace robo{
 	}
 
 	int Kinematics::cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init){
-		Vector6d delta_twist;
-		Vector6d delta_twist_new;
+		Twist delta_twist;
+		Twist delta_twist_new;
 		q = q_init;
 		joint_to_cartesian(q);
 		delta_twist = f_end - f_in;
@@ -112,8 +113,8 @@ namespace robo{
 		for(int iter_link=0; iter_link<chain.nr_links; ++iter_link){
 			if (chain.links[iter_link].has_joint()) {
 				// compute twist of the end effector motion caused by joint [jointndx]; expressed in base frame, with vel. ref. point equal to the end effector
-				Vector6d unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0));
-				Vector6d end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
+				Twist unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0));
+				Twist end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
 				jacobian.block<6,1>(0, iter_joint) << end_twist;
 				++iter_joint;
 			}

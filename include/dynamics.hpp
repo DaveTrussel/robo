@@ -21,9 +21,9 @@ namespace robo{
 		// Members
 		Chain chain;
 		std::vector<Frame> link_frames; // X
-		std::vector<Vector6d> unit_twists; // S
-		std::vector<Vector6d> velocities;
-		std::vector<Vector6d> accelerations;
+		std::vector<Twist> unit_twists; // S
+		std::vector<Twist> velocities;
+		std::vector<Twist> accelerations;
 	};
 
 }	

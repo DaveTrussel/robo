@@ -20,8 +20,8 @@ namespace robo {
 	}
 
 
-	Twist rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist){
-		Vector6d res;
+	Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist){
+		Twist res;
 		res.linear = rot * twist.linear;
 		res.rotation = rot * twist.rotation;
 		return res;
@@ -51,7 +51,7 @@ namespace robo {
 	}
 
 	// Rotation * Twist
-	Twist operator *(const Eigen::Matrix3d& rot, const Vector6d& twist){
+	Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist){
 		Twist res;
 		res.linear = rot * twist.linear;
 		res.rotation = rot * twist.rotation;

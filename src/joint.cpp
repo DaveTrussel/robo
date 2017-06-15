@@ -1,5 +1,4 @@
 #include "../include/joint.hpp"
-#include "../include/frame.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
@@ -29,8 +28,8 @@ namespace robo {
 		}
 	}
 
-	Vector6d Joint::twist(const double &dq)const{
-		Vector6d twist;
+	Twist Joint::twist(const double &dq)const{
+		Twist twist;
 		Eigen::Vector3d speed_lin;
 		Eigen::Vector3d speed_rot;
 		if(type == JointType::Rotational){

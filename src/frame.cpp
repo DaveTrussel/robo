@@ -29,7 +29,7 @@ namespace robo {
 		homo.block(0,0,3,3) = orientation;
 		homo.block(0,3,3,1) = origin;
 		homo.row(3) << 0.0, 0.0, 0.0, 1.0;
-		return homo;
+		
 	}
 
 	Eigen::Vector3d Frame::nautical_angles()const{
@@ -55,19 +55,6 @@ namespace robo {
 						 left.orientation*right.orientation);
 	}
 
-	// TODO remove after refactor
-	// Frame - Frame
-	Vector6d operator -(const Frame& left, const Frame& right){
-		Vector6d delta_twist;
-		delta_twist.block<3,1>(0,0) << left.origin - right.origin;
-		Eigen::Matrix3d rotinvrot;
-		rotinvrot << left.orientation.inverse() * right.orientation; 
-		Eigen::AngleAxisd angle_axis(rotinvrot);
-		Eigen::Vector3d angular;
-		delta_twist.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle();
-		return delta_twist;
-	}
-
 	// Frame - Frame
 	Twist operator -(const Frame& left, const Frame& right){
 		Twist delta_twist;
@@ -80,27 +67,4 @@ namespace robo {
 		return delta_twist;
 	}
 
-	////////////////////////////////////////////////////////////////
-	// TODO this got out of hand, create own Twist and Wrench class (remove after refactor)
-	////////////////////////////////////////////////////////////////
-	Vector6d rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist){
-		Vector6d twist_new;
-		twist_new.block<3,1>(0,0) << rot * Eigen::Vector3d(twist.block<3,1>(0,0));
-		twist_new.block<3,1>(3,0) << rot * Eigen::Vector3d(twist.block<3,1>(3,0));
-		return twist_new;
-	}
-
-	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref){
-		Vector6d twist_new;
-		twist_new.block<3,1>(0,0) << twist.block<3,1>(0,0) + delta_ref.cross(twist.block<3,1>(3,0));
-		twist_new.block<3,1>(3,0) << twist.block<3,1>(3,0);
-		return twist_new;
-	}
-
-	Vector6d multiply_twists(const Vector6d& rhs, const Vector6d& lhs){
-		Vector6d twist_new;
-		twist_new.block<3,1>(0,0) << lhs.block<3,1>(3,0).cross(rhs.block<3,1>(0,0)) + lhs.block<3,1>(0,0).cross(rhs.block<3,1>(3,0));
-		twist_new.block<3,1>(3,0) << lhs.block<3,1>(3,0).cross(rhs.block<3,1>(3,0));
-		return twist_new;
-	}
 }

@@ -5,8 +5,6 @@
 
 namespace robo{
 
-	typedef Eigen::Matrix< double, 6, 1 > Vector6d; // TODO make a own typedef header file
-
 	class Link{
 	public:
 		// Members
@@ -20,7 +18,7 @@ namespace robo{
 		// Member functions
 		Frame pose(const double& q)const;
 		
-		Vector6d twist(const double& q, const double &dq)const;
+		Twist twist(const double& q, const double &dq)const;
 		
 		bool has_joint()const;
 	};

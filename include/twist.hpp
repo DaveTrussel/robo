@@ -24,7 +24,7 @@ namespace robo {
 	};
 
 
-	Twist rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist);
+	Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist);
 
 	Twist change_twist_reference(const Twist& twist, const Eigen::Vector3d& delta_ref);
 
@@ -32,6 +32,6 @@ namespace robo {
 
 	Twist operator *(const Twist& lhs, const Twist& rhs);
 
-	Twist operator *(const Eigen::Matrix3d& rot, const Vector6d& twist);
+	Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist);
 
 }

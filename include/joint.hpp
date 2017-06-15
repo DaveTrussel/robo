@@ -27,7 +27,7 @@ namespace robo {
 		// Member functions
 		Frame pose(const double& q)const;
 
-		Vector6d twist(const double &dq)const;
+		Twist twist(const double &dq)const;
 
 		Eigen::Matrix3d rotation(const double& q)const;
 
