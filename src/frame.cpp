@@ -55,6 +55,7 @@ namespace robo {
 						 left.orientation*right.orientation);
 	}
 
+	// TODO remove after refactor
 	// Frame - Frame
 	Vector6d operator -(const Frame& left, const Frame& right){
 		Vector6d delta_twist;
@@ -63,19 +64,30 @@ namespace robo {
 		rotinvrot << left.orientation.inverse() * right.orientation; 
 		Eigen::AngleAxisd angle_axis(rotinvrot);
 		Eigen::Vector3d angular;
-		delta_twist.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); // TODO check if angle_axis.axis() is normalized or not
+		delta_twist.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle();
+		return delta_twist;
+	}
+
+	// Frame - Frame
+	Twist operator -(const Frame& left, const Frame& right){
+		Twist delta_twist;
+		delta_twist.linear = left.origin - right.origin;
+		Eigen::Matrix3d rotinvrot;
+		rotinvrot << left.orientation.inverse() * right.orientation; 
+		Eigen::AngleAxisd angle_axis(rotinvrot);
+		Eigen::Vector3d angular;
+		delta_twist.rotation = left.orientation * angle_axis.axis() * angle_axis.angle(); 
 		return delta_twist;
 	}
 
 	////////////////////////////////////////////////////////////////
-	// TODO this got out of hand, create own Twist and Wrench class
+	// TODO this got out of hand, create own Twist and Wrench class (remove after refactor)
 	////////////////////////////////////////////////////////////////
 	Vector6d rotate_twist(const Eigen::Matrix3d& rot, const Vector6d& twist){
 		Vector6d twist_new;
 		twist_new.block<3,1>(0,0) << rot * Eigen::Vector3d(twist.block<3,1>(0,0));
 		twist_new.block<3,1>(3,0) << rot * Eigen::Vector3d(twist.block<3,1>(3,0));
 		return twist_new;
-
 	}
 
 	Vector6d change_twist_reference(const Vector6d& twist, const Eigen::Vector3d& delta_ref){
