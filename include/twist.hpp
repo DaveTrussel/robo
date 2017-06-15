@@ -30,6 +30,8 @@ namespace robo {
 
 	Twist multiply_twists(const Twist& lhs, const Twist& rhs);
 
+	Twist operator +(const Twist& lhs, const Twist& rhs);
+
 	Twist operator *(const Twist& lhs, const Twist& rhs);
 
 	Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist);
