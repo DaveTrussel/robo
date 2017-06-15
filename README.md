@@ -28,7 +28,7 @@ mkdir build && cd build
 cmake ..
 ```
 
-TODO for now only test application is build. Maybe build a shared or static lib instead.
+For now only a test application is build. Maybe build a shared or static lib instead later into the project.
 
 ## Running the tests
 
@@ -105,6 +105,8 @@ cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-
 - Inverse Kinematics (cartesian coordinates to joint coordinates) (First implementation done. However check this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) for improvement in performance and success rate. Also implement joint limits.)
 - Dynamic Model (Positions, Velocities, Torques -> Accelerations)
 - Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques)
+- Implement own classes for twist (minimal velocity, acceleration representation) and Wrench (minimal force representation)
+- Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths.
 
 ## Authors
 
