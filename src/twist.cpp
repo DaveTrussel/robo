@@ -42,6 +42,10 @@ namespace robo {
 		return res;
 	}
 
+	Twist operator +(const Twist& lhs, const Twist& rhs){
+		return Twist(lhs.linear+rhs.linear, lhs.rotation+rhs.rotation);
+	}
+
 	// Twist * Twist
 	Twist operator *(const Twist& lhs, const Twist& rhs){
 		Twist res;
@@ -56,5 +60,13 @@ namespace robo {
 		res.linear = rot * twist.linear;
 		res.rotation = rot * twist.rotation;
 		return res;
+	}
+
+	Twist operator *(const double& val, const Twist& twist){
+		return Twist(twist.linear*val, twist.rotation*val);
+	}
+
+	Twist operator *(const Twist& twist, const double& val){
+		return Twist(twist.linear*val, twist.rotation*val);
 	}
 }

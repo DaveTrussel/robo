@@ -6,7 +6,7 @@
 
 namespace robo{
 
-	typedef Eigen::Matrix<double, 6, 1> Vector6d;
+	using Vector6d = Eigen::Matrix<double, 6, 1>;
 
 	class Kinematics{
 	public:

@@ -34,4 +34,8 @@ namespace robo {
 
 	Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist);
 
+	Twist operator *(const double& val, const Twist& twist);
+
+	Twist operator *(const Twist& twist, const double& val);
+
 }
