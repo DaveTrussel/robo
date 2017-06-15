@@ -8,11 +8,12 @@ namespace robo{
 
 	int Dynamics::calculate_torques(const Eigen::VectorXd& q_, const Eigen::VectorXd& dq_,
 							  const Eigen::VectorXd& ddq_, const Eigen::Vector3d& gravity_){
-		double q, dq, dqq;
+		double q, dq, ddq;
 		Vector6d link_twist;
 		Eigen::Matrix3d to_link_rot;
 
-		Vector6d gravity << gravity_, 0.0, 0.0, 0.0;
+		Vector6d gravity;
+		gravity << gravity_, 0.0, 0.0, 0.0;
 
 		// From root to tip
 		int iter_joint = 0;
