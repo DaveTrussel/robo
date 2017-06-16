@@ -29,7 +29,7 @@ namespace robo {
 		homo.block(0,0,3,3) = orientation;
 		homo.block(0,3,3,1) = origin;
 		homo.row(3) << 0.0, 0.0, 0.0, 1.0;
-		
+		return homo;
 	}
 
 	Eigen::Vector3d Frame::nautical_angles()const{
@@ -56,15 +56,15 @@ namespace robo {
 	}
 
 	// Frame - Frame
-	Twist operator -(const Frame& left, const Frame& right){
-		Twist delta_twist;
-		delta_twist.linear = left.origin - right.origin;
+	Vector6d operator -(const Frame& left, const Frame& right){
+		Vector6d delta_frame;
+		delta_frame.block<3,1>(0,0) << left.origin - right.origin;
 		Eigen::Matrix3d rotinvrot;
 		rotinvrot << left.orientation.inverse() * right.orientation; 
 		Eigen::AngleAxisd angle_axis(rotinvrot);
 		Eigen::Vector3d angular;
-		delta_twist.rotation = left.orientation * angle_axis.axis() * angle_axis.angle(); 
-		return delta_twist;
+		delta_frame.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); 
+		return delta_frame;
 	}
 
 }

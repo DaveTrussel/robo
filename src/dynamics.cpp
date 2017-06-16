@@ -12,7 +12,7 @@ namespace robo{
 		Twist link_twist;
 		Eigen::Matrix3d to_link_rot;
 
-		Twist gravity = {gravity_, Eigen::Vector3d(0.0, 0.0, 0.0)};
+		Twist gravity{gravity_, Eigen::Vector3d(0.0, 0.0, 0.0)};
 
 		// From root to tip
 		int iter_joint = 0;

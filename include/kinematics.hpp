@@ -6,8 +6,6 @@
 
 namespace robo{
 
-	using Vector6d = Eigen::Matrix<double, 6, 1>;
-
 	class Kinematics{
 	public:
 		// Members

@@ -1,5 +1,6 @@
 #include "../include/kinematics.hpp"
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace robo{
 
@@ -36,15 +37,15 @@ namespace robo{
 	}
 
 	int Kinematics::cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init){
-		Twist delta_twist;
-		Twist delta_twist_new;
+		Vector6d delta_frame;
+		Vector6d delta_frame_new;
 		q = q_init;
 		joint_to_cartesian(q);
-		delta_twist = f_end - f_in;
-		delta_twist = L.asDiagonal() * delta_twist;
-		double norm_delta_twist = delta_twist.norm();
-		if(norm_delta_twist < eps){
-			delta_twist = f_end - f_in;
+		delta_frame = f_end - f_in;
+		delta_frame = L.asDiagonal() * delta_frame;
+		double norm_delta_frame = delta_frame.norm();
+		if(norm_delta_frame < eps){
+			delta_frame = f_end - f_in;
 			svd.compute(jacobian);
 			q_out = q;
 			return (error = E_NO_ERROR);
@@ -55,7 +56,7 @@ namespace robo{
 		double v = 2;
 		double lambda = 10;
 		double dnorm = 1;
-		double norm_delta_twist_new;
+		double norm_delta_frame_new;
 		double rho;
 
 		for(int i=0; i<max_iter; i++){
@@ -64,10 +65,10 @@ namespace robo{
 			for(int j=0; j<singular_vals.rows(); ++j){
 				singular_vals(j) = singular_vals(j) / (singular_vals(j) * singular_vals(j) + lambda);
 			}
-			tmp = svd.matrixU().transpose() * delta_twist;
+			tmp = svd.matrixU().transpose() * delta_frame;
 			tmp = singular_vals.cwiseProduct(tmp);
 			delta_q = svd.matrixV() * tmp;
-			grad = jacobian.transpose() * delta_twist;
+			grad = jacobian.transpose() * delta_frame;
 			dnorm = delta_q.lpNorm<Eigen::Infinity>();
 			// check for errors
 			if(dnorm < eps_joints){
@@ -79,16 +80,16 @@ namespace robo{
 
 			q_new = q + delta_q;
             joint_to_cartesian(q_new);
-			delta_twist_new = f_end - f_in;
-			norm_delta_twist_new = delta_twist_new.norm();
-			rho = norm_delta_twist * norm_delta_twist - norm_delta_twist_new * norm_delta_twist_new;
+			delta_frame_new = f_end - f_in;
+			norm_delta_frame_new = delta_frame_new.norm();
+			rho = norm_delta_frame * norm_delta_frame - norm_delta_frame_new * norm_delta_frame_new;
 			rho /= delta_q.transpose() * (lambda * delta_q + grad);
 			if (rho > 0) {
 				q = q_new;
-				delta_twist = delta_twist_new;
-				norm_delta_twist = norm_delta_twist_new;
-				if (norm_delta_twist < eps) {
-					delta_twist = f_end - f_in;
+				delta_frame = delta_frame_new;
+				norm_delta_frame = norm_delta_frame_new;
+				if (norm_delta_frame < eps) {
+					delta_frame = f_end - f_in;
 					q_out = q;
 					return (error = E_NO_ERROR);
 				}
@@ -115,7 +116,8 @@ namespace robo{
 				// compute twist of the end effector motion caused by joint [jointndx]; expressed in base frame, with vel. ref. point equal to the end effector
 				Twist unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0));
 				Twist end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin);
-				jacobian.block<6,1>(0, iter_joint) << end_twist;
+				jacobian.block<3,1>(0, iter_joint) << end_twist.linear;
+				jacobian.block<3,1>(3, iter_joint) << end_twist.rotation;
 				++iter_joint;
 			}
 		}

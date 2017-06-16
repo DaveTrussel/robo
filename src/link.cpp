@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../include/link.hpp"
 
 namespace robo {

@@ -29,21 +29,16 @@ namespace robo {
 	}
 
 	Twist Joint::twist(const double &dq)const{
-		Twist twist;
 		Eigen::Vector3d speed_lin;
 		Eigen::Vector3d speed_rot;
+		speed_lin << 0.0, 0.0, 0.0;
+		speed_rot << 0.0, 0.0, 0.0;
 		if(type == JointType::Rotational){
-			speed_lin << 0.0, 0.0, 0.0;
 			speed_rot << dq*axis;
 		}
 		if(type == JointType::Translational){
 			speed_lin << dq*axis;
-			speed_rot << 0.0, 0.0, 0.0;
 		}
-		else{
-			twist << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-		}
-		twist << speed_lin, speed_rot;
-		return twist;
+		return Twist(speed_lin, speed_rot);
 	}
 }

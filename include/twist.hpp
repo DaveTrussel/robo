@@ -12,9 +12,9 @@ namespace robo {
 		Eigen::Vector3d rotation;
 
 		// Constructors
-		Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot);
+		explicit Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot);
 		
-		Twist(const Eigen::Vector3d& lin);
+		explicit Twist(const Eigen::Vector3d& lin);
 		
 		Twist();
 

@@ -24,10 +24,10 @@ double my_rand(){
 }
 
 int main () {
-     std::srand(std::time(0));
+    std::srand(std::time(0));
 
 	Eigen::Vector3d axis_z, axis_y;
-	
+
 	axis_y << 0.0, 1.0, 0.0;
 	axis_z << 0.0, 0.0, 1.0;
 	
@@ -36,6 +36,23 @@ int main () {
 	Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
 	Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
 	Joint joint_none = Joint(0, f, axis_z, JointType::None);
+
+	// test twist
+	Twist twist(axis_y, axis_z);
+	twist = twist*3.0;
+	cout << "Twist test:" << endl 
+		 << "twist.linear=" << endl << twist.linear << endl 
+		 << "twist.rotation=" << endl << twist.rotation << endl
+		 << "Functions: " << endl
+		 << rotate_twist(joint_ellbow.pose(0.5).orientation, twist).rotation << endl
+		 << change_twist_reference(twist, axis_y).linear << endl;
+
+	cout << "Joint test:" << endl 
+		 << "Pose(0.5)=" << endl << joint_ellbow.pose(0.5).origin << endl 
+		 << joint_ellbow.pose(0.5).orientation << endl 
+		 << " Twist(0.5)=" << endl << joint_ellbow.twist(0.5).linear << endl 
+		 << joint_ellbow.twist(0.5).rotation << endl;
+
 	
 	Eigen::Vector3d length;
 	length << 0.0, 0.0, 1.0;

@@ -5,6 +5,8 @@
 
 namespace robo {
 
+	using Vector6d = Eigen::Matrix<double, 6, 1>;
+
 	class Frame{
 	public:
 
@@ -37,5 +39,5 @@ namespace robo {
 
 	Frame operator *(const Frame& left, const Frame& rigth);
 
-	Twist operator -(const Frame& left, const Frame& right);
+	Vector6d operator -(const Frame& left, const Frame& right);
 }

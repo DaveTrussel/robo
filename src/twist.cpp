@@ -1,14 +1,15 @@
 #include "../include/twist.hpp"
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace robo {
 
 	// Constructors
 	Twist::Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){}
 	
-	Twist::Twist(const Eigen::Vector3d& lin): linear(lin), rotation(rot){}
+	Twist::Twist(const Eigen::Vector3d& lin): linear(lin), rotation(Eigen::Vector3d()){}
 	
-	Twist::Twist(): linear(Vector3d()), rotation(Vector3d()){}
+	Twist::Twist(): linear(Eigen::Vector3d(0.0, 0.0, 0.0)), rotation(Eigen::Vector3d()){}
 
 	// Operators
 	Twist& Twist::operator =(const Twist& other){
@@ -21,10 +22,7 @@ namespace robo {
 
 
 	Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist){
-		Twist res;
-		res.linear = rot * twist.linear;
-		res.rotation = rot * twist.rotation;
-		return res;
+		return Twist(rot * twist.linear, rot * twist.rotation);
 	}
 
 	Twist change_twist_reference(const Twist& twist, const Eigen::Vector3d& delta_ref){
