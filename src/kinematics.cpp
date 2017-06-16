@@ -72,18 +72,22 @@ namespace robo{
 			delta_q = svd.matrixV() * tmp_q;
 			grad = jacobian_weighted.transpose() * delta_twist;
 			dnorm = delta_q.lpNorm<Eigen::Infinity>();
-			// check for errors
-			if(dnorm < eps_joints){
-				return (error = E_JOINTS_INCREMENT_TOO_SMALL);
-			}
-			if(grad.transpose() * grad < eps_joints * eps_joints){
-				return (error = E_JOINTS_GRADIENT_TOO_SMALL);
-			}
 
 			q_new = q + delta_q;
             joint_to_cartesian(q_new);
 			delta_twist_new = f_end - f_in;
 			norm_delta_twist_new = delta_twist_new.norm();
+
+			// check for errors
+			if(dnorm < eps_joints){
+				error_norm_IK = norm_delta_twist_new;
+				return (error = E_JOINTS_INCREMENT_TOO_SMALL);
+			}
+			if(grad.transpose() * grad < eps_joints * eps_joints){
+				error_norm_IK = norm_delta_twist_new;
+				return (error = E_JOINTS_GRADIENT_TOO_SMALL);
+			}
+
 			rho = norm_delta_twist * norm_delta_twist - norm_delta_twist_new * norm_delta_twist_new;
 			rho /= delta_q.transpose() * (lambda * delta_q + grad);
 			if (rho > 0) {
@@ -92,7 +96,7 @@ namespace robo{
 				norm_delta_twist = norm_delta_twist_new;
 				std::cout << "DEBUG: Norm delta_twist: " << norm_delta_twist << " at iter: " << i << std::endl;
 				if (norm_delta_twist < eps) {
-					delta_twist = f_end - f_in;
+					error_norm_IK = norm_delta_twist;
 					q_out = q;
 					return (error = E_NO_ERROR);
 				}
@@ -109,7 +113,29 @@ namespace robo{
 			q_out = q;
 		}
         q_out = q;
+        error_norm_IK = norm_delta_twist;
         return (error = E_MAX_ITERATIONS);
+	}
+
+	int Kinematics::cartesian_to_joint_sugihara(const Frame& f_in, const Eigen::VectorXd& q_init){
+		Vector6d residual;
+		Vector6d gk; // TODO find out how this is called
+		Eigen::MatrixXd jacobian_weighted;
+
+		q = q_init;
+
+		for(int i=0; i<max_iter; ++i){
+			joint_to_cartesian(q);
+			calculate_jacobian(q);
+			residual = f_end - f_in;
+			jacobian_weighted = weights_IK.asDiagonal() * jacobian;
+			gk = jacobian_weighted * residual;
+			weigths_N = lambda_chan * Ek + biases; // (EK = eT * weights * e)
+			H = jacobian_weighted*jacobian + weigths_N;
+			q_new = q + H.inverse()*gk;
+		}
+
+	    return;
 	}
 
 	void Kinematics::calculate_jacobian(const Eigen::VectorXd& q){

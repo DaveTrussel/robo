@@ -19,7 +19,7 @@ namespace robo{
 		double eps;
     	double eps_joints;
     	int error;
-    	// TODO member to easily check the weighted error norm
+    	double error_norm_IK;
 
     	// Error code constants 
     	// TODO make this an enum class for clarity e.g. InvKinStatus::no_error?
@@ -31,13 +31,13 @@ namespace robo{
     	// Constructors
 		Kinematics(const Chain& chain,
                    int max_iter=500,
-                   double eps=1e-3,
-                   double eps_joints=1e-21);
+                   double eps=1e-4,
+                   double eps_joints=1e-16);
 
 		Kinematics(const Chain& chain, Vector6d weights_IK,
                    int max_iter=500,
-                   double eps=1e-3,
-                   double eps_joints=1e-21);
+                   double eps=1e-4,
+                   double eps_joints=1e-16);
 		
 		// Member functions
 		void joint_to_cartesian(const Eigen::VectorXd& q);
@@ -53,9 +53,16 @@ namespace robo{
 		* Check the return value to see if the solver was sucessfull 
 		*/
 
+		int cartesian_to_joint_sugihara(const Frame& f_in, const Eigen::VectorXd& q_init);
+		/**
+		* Calculates the inverse kinematics (using a Levenberg-Marquardt algorithm)
+		* The result is stored in q_out
+		* Check the return value to see if the solver was sucessfull 
+		*/
+
 		void calculate_jacobian(const Eigen::VectorXd& q);
 		/**
-		* Calculates the jacobian
+		* Calculates the jacobian (calculate forward position before)
 		* The result is stored in jacobian
 		*/
 		

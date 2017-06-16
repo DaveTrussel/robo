@@ -104,8 +104,8 @@ int main () {
     kin.joint_to_cartesian(kin.q_out);
     
     cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
-    cout << "Error to target (cartesian): " << endl << kin.f_end - f_target << endl;
- 	
+    cout << "Weighted error norm to target (cartesian): " << endl << kin.error_norm_IK << endl; 
+ 	cout << "Inital seperation norm (joint space): " << (q - q_init).norm() <<  endl;
  	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 tests.
 
  } 
