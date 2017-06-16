@@ -40,22 +40,22 @@ int main () {
 	// test twist
 	Twist twist(axis_y, axis_z);
 	twist = twist*3.0;
-	cout << "Twist test:" << endl 
+	cout << "Twist Test:" << endl 
 		 << "twist.linear=" << endl << twist.linear << endl 
 		 << "twist.rotation=" << endl << twist.rotation << endl
 		 << "Functions: " << endl
 		 << rotate_twist(joint_ellbow.pose(0.5).orientation, twist).rotation << endl
-		 << change_twist_reference(twist, axis_y).linear << endl;
+		 << change_twist_reference(twist, axis_y).linear << endl <<endl;;
 
-	cout << "Joint test:" << endl 
+	cout << "Joint Test:" << endl 
 		 << "Pose(0.5)=" << endl << joint_ellbow.pose(0.5).origin << endl 
 		 << joint_ellbow.pose(0.5).orientation << endl 
 		 << " Twist(0.5)=" << endl << joint_ellbow.twist(0.5).linear << endl 
-		 << joint_ellbow.twist(0.5).rotation << endl;
+		 << joint_ellbow.twist(0.5).rotation << endl << endl;;
 
 	
 	Eigen::Vector3d length;
-	length << 0.0, 0.0, 1.0;
+	length << 0.0, 0.0, 0.5;
 	Frame tip = Frame(length);
     Frame i_want_a_copy;
     i_want_a_copy = tip;
@@ -88,10 +88,11 @@ int main () {
  	kin.joint_to_cartesian(q);
  	TimePoint toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
- 	cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
- 	cout << "Frame at end of robot chain:" << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
- 	cout << endl << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl;
- 	cout << endl << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
+ 	cout << "Kinematics Test:" << endl 
+ 		 << "Solved forward kinematics in: " << duration << " Microseconds." << endl
+ 	     << "Frame at end of robot chain:" << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl << endl
+ 	     << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl << endl
+ 	     << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
 
     kin.calculate_jacobian(q);
     cout << "Calculated jacobian: " << endl << kin.jacobian << endl;
