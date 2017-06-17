@@ -6,18 +6,33 @@ namespace robo{
 
 	// Constructors
 	Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_, double eps_joints_):
-    chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
-	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
+    chain(chain_), nr_joints(chain.nr_joints), nr_links(chain.nr_links),
+    f_end(), joint_roots(nr_joints), joint_tips(nr_joints), link_tips(nr_links),
     max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_)
-	{
+    {
+    	q = 				Eigen::VectorXd::Zero(nr_joints);
+    	delta_q = 			Eigen::VectorXd::Zero(nr_joints);
+    	q_out = 			Eigen::VectorXd::Zero(nr_joints);
+    	weights_damping =  	Eigen::VectorXd::Zero(nr_joints);
+		bias = 				Eigen::VectorXd::Constant(chain.nr_joints, 1e-16);
+		jacobian = 			Eigen::MatrixXd::Zero(6, nr_joints);
+		jacobian_weighted = Eigen::MatrixXd::Zero(6, nr_joints);
+		A = 				Eigen::MatrixXd::Zero(nr_joints, nr_joints);
+		b = 				Eigen::VectorXd::Zero(nr_joints);
+		
 		weights_IK << 1, 1, 1, 0.1, 0.1, 0.1;
+
 	}
 
-
 	Kinematics::Kinematics(const Chain& chain_, Vector6d weights_IK_, int max_iter_, double eps_, double eps_joints_):
-    chain(chain_), f_end(), joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints), link_tips(chain.nr_links),
-	jacobian(6, chain_.nr_joints), svd(6, chain_.nr_joints,Eigen::ComputeThinU | Eigen::ComputeThinV),
-    max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_), weights_IK(weights_IK_){}
+    chain(chain_), nr_joints(chain.nr_joints), nr_links(chain.nr_links), q(nr_joints), q_out(nr_joints), delta_q(nr_joints), 
+    f_end(), joint_roots(nr_joints), joint_tips(nr_joints), link_tips(nr_links), 
+    jacobian(6, nr_joints), A(nr_joints, nr_joints), b(nr_joints),
+    jacobian_weighted(6,nr_joints), weights_damping(nr_joints, nr_joints),
+    max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_)
+    {
+    	bias = Eigen::VectorXd::Constant(chain.nr_joints, 1e-16);
+    }
 	
 	// Member functions
 	void Kinematics::joint_to_cartesian(const Eigen::VectorXd& q){
@@ -38,104 +53,37 @@ namespace robo{
 	}
 
 	int Kinematics::cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init){
-		Vector6d delta_frame;
-		Vector6d delta_frame_new;
-		q = q_init;
-		joint_to_cartesian(q);
-		delta_frame = f_end - f_in;
-		delta_frame = weights_IK.asDiagonal() * delta_frame;
-		double norm_delta_frame = delta_frame.norm();
-		calculate_jacobian(q);
-		
-		// check if position already within specified tolerance
-		if(norm_delta_frame < eps){
-			delta_frame = f_end - f_in;
-			q_out = q;
-			return (error = E_NO_ERROR);
-		}
-		
-		Eigen::MatrixXd jacobian_weighted = weights_IK.asDiagonal() * jacobian;
-
-		double step_multiplier = 2;
-		double lambda = 10;
-		double dnorm = 1;
-		double norm_delta_frame_new;
-		double rho;
-
-		for(int i=0; i<max_iter; ++i){
-			svd.compute(jacobian_weighted); // TODO Profiling showed this function call is very expensive is there a cheaper alternative? 
-			singular_vals = svd.singularValues();
-			for(int j=0; j<singular_vals.rows(); ++j){
-				singular_vals(j) = singular_vals(j) / (singular_vals(j) * singular_vals(j) + lambda);
-			}
-			tmp_q = svd.matrixU().transpose() * delta_frame;
-			tmp_q = singular_vals.cwiseProduct(tmp_q);
-			delta_q = svd.matrixV() * tmp_q;
-			grad = jacobian_weighted.transpose() * delta_frame;
-			dnorm = delta_q.lpNorm<Eigen::Infinity>();
-
-			q_new = q + delta_q;
-            joint_to_cartesian(q_new);
-			delta_twist_new = f_end - f_in;
-			norm_delta_twist_new = delta_twist_new.norm();
-
-			// check for errors
-			if(dnorm < eps_joints){
-				error_norm_IK = norm_delta_twist_new;
-				return (error = E_JOINTS_INCREMENT_TOO_SMALL);
-			}
-			if(grad.transpose() * grad < eps_joints * eps_joints){
-				error_norm_IK = norm_delta_twist_new;
-				return (error = E_JOINTS_GRADIENT_TOO_SMALL);
-			}
-			rho = norm_delta_frame * norm_delta_frame - norm_delta_frame_new * norm_delta_frame_new;
-			rho /= delta_q.transpose() * (lambda * delta_q + grad);
-			if (rho > 0) {
-				q = q_new;
-				delta_frame = delta_frame_new;
-				norm_delta_frame = norm_delta_frame_new;
-				std::cout << "DEBUG: Norm delta_twist: " << norm_delta_frame << " at iter: " << i << std::endl;
-				if (norm_delta_frame < eps) {
-					error_norm_IK = norm_delta_twist;
-					q_out = q;
-					return (error = E_NO_ERROR);
-				}
-				calculate_jacobian(q_new);
-				jacobian_weighted = weights_IK.asDiagonal() * jacobian;
-				double tmp = 2 * rho - 1;
-				lambda = lambda * std::max(1 / 3.0, 1-tmp*tmp*tmp);
-				step_multiplier = 2;
-			} 
-			else {
-				lambda = lambda * step_multiplier;
-				step_multiplier = 2 * step_multiplier;
-			}
-			q_out = q;
-		}
-        q_out = q;
-        error_norm_IK = norm_delta_twist;
-        return (error = E_MAX_ITERATIONS);
-	}
-
-	int Kinematics::cartesian_to_joint_sugihara(const Frame& f_in, const Eigen::VectorXd& q_init){
+		// modified version of
+		//https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf
 		Vector6d residual;
-		Vector6d gk; // TODO find out how this is called
-		Eigen::MatrixXd jacobian_weighted;
-
+		double lambda = 0.1;
+		Vector6d factor_damp = Vector6d::Constant(lambda);
 		q = q_init;
+		double residual_norm;
+		double residual_norm_squared;
 
 		for(int i=0; i<max_iter; ++i){
 			joint_to_cartesian(q);
 			calculate_jacobian(q);
 			residual = f_end - f_in;
-			jacobian_weighted = weights_IK.asDiagonal() * jacobian;
-			gk = jacobian_weighted * residual;
-			weigths_N = lambda_chan * Ek + biases; // (EK = eT * weights * e)
-			H = jacobian_weighted*jacobian + weigths_N;
-			q_new = q + H.inverse()*gk;
+			residual_norm = (weights_IK.asDiagonal()*residual).norm();
+			if(residual_norm < eps){
+				q_out = q;
+				error_norm_IK = residual_norm;
+				return (error = E_NO_ERROR);
+			}
+			
+			A = jacobian * jacobian.transpose();
+			residual_norm_squared = residual_norm * residual_norm;
+			factor_damp = Vector6d::Constant(residual_norm_squared);
+			A.diagonal() += factor_damp;
+			b = residual;
+			delta_q = A.colPivHouseholderQr().solve(b);
+			q = q + jacobian.transpose() * delta_q;
 		}
-
-	    return;
+		q_out = q;
+		error_norm_IK = residual_norm;
+	    return (error = E_MAX_ITERATIONS);
 	}
 
 	void Kinematics::calculate_jacobian(const Eigen::VectorXd& q){

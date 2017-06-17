@@ -23,10 +23,6 @@ double my_rand(){
 }
 
 int main () {
-<<<<<<< HEAD
-=======
-
->>>>>>> master
     std::srand(std::time(0));
 
 	Eigen::Vector3d axis_z, axis_y;
@@ -127,6 +123,5 @@ int main () {
     cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
     cout << "Weighted error norm to target (cartesian): " << endl << kin.error_norm_IK << endl; 
  	cout << "Inital seperation norm (joint space): " << (q - q_init).norm() <<  endl;
- 	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 tests.
-
+ 	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 test
  } 

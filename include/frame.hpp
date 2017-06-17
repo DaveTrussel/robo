@@ -6,6 +6,8 @@
 namespace robo {
 
 	using Vector6d = Eigen::Matrix<double, 6, 1>;
+	using Matrix6Xd = Eigen::Matrix<double, 6, Eigen::Dynamic>;
+	using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
 	class Frame{
 	public:

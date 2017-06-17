@@ -31,12 +31,12 @@ namespace robo{
     	// Constructors
 		Kinematics(const Chain& chain,
                    int max_iter=500,
-                   double eps=1e-4,
+                   double eps=1e-5,
                    double eps_joints=1e-16);
 
 		Kinematics(const Chain& chain, Vector6d weights_IK,
                    int max_iter=500,
-                   double eps=1e-4,
+                   double eps=1e-5,
                    double eps_joints=1e-16);
 		
 		// Member functions
@@ -48,16 +48,9 @@ namespace robo{
 
 		int cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
 		/**
-		* Calculates the inverse kinematics (using a Levenberg-Marquardt algorithm)
+		* Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
 		* The result is stored in q_out
-		* Check the return value to see if the solver was sucessfull 
-		*/
-
-		int cartesian_to_joint_sugihara(const Frame& f_in, const Eigen::VectorXd& q_init);
-		/**
-		* Calculates the inverse kinematics (using a Levenberg-Marquardt algorithm)
-		* The result is stored in q_out
-		* Check the return value to see if the solver was sucessfull 
+		* Check the return value to see if the solver was sucessfull (==1)
 		*/
 
 		void calculate_jacobian(const Eigen::VectorXd& q);
@@ -68,15 +61,20 @@ namespace robo{
 		
 	private:
 		// Members
+		int nr_joints;
+		int nr_links;
 		Eigen::VectorXd q; // Joint positions
-		Eigen::VectorXd q_new;
-		Eigen::VectorXd tmp_q;
 		Eigen::VectorXd delta_q;
-		Eigen::VectorXd grad; // gradient
-		Eigen::VectorXd singular_vals; // TODO rename
+		Eigen::VectorXd weights_damping;
+		Eigen::VectorXd bias;
+		
+		Eigen::MatrixXd jacobian_weighted;
+		
+		Eigen::MatrixXd A; // Linear system: Ax = b
+		Eigen::VectorXd b; // Linear system: Ax = b
+		
 		std::vector<Frame> joint_roots;
 		std::vector<Frame> joint_tips;
-		Eigen::JacobiSVD<Eigen::MatrixXd> svd;
 	};
 
 }	
