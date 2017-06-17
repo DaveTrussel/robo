@@ -47,12 +47,6 @@ namespace robo {
 	    return origin + orientation*arg;
 	}
 
-	// Frame * Frame
-	Frame operator *(const Frame& left, const Frame& right){
-			return Frame(left.orientation*right.origin+left.origin,
-						 left.orientation*right.orientation);
-	}
-
 	// Frame - Frame
 	Vector6d operator -(const Frame& left, const Frame& right){
 		Vector6d delta_frame;

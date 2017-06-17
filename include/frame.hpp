@@ -39,7 +39,10 @@ namespace robo {
 		Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const;
 	};
 
-	Frame operator *(const Frame& left, const Frame& rigth);
+	inline Frame operator *(const Frame& left, const Frame& right){
+			return Frame(left.orientation*right.origin+left.origin,
+						 left.orientation*right.orientation);
+	};
 
 	Vector6d operator -(const Frame& left, const Frame& right);
 }
