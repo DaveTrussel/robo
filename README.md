@@ -102,10 +102,11 @@ cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-
 ## TODO
 - Basic model (Frames, Joints, Links, Chain)  :white_check_mark:
 - Forward Kinematics (joint coordinates to cartesian coordinates)  :white_check_mark:
-- Inverse Kinematics (cartesian coordinates to joint coordinates) (First implementation done. However check this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) for improvement in performance and success rate. Also implement joint limits.)
+- Inverse Kinematics (cartesian coordinates to joint coordinates) (Based on a damped Levenberg-Marquart algorithm. Inspired by this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) which showed high success rate for the recommended LM method.) :white_check_mark:
 - Dynamic Model (Positions, Velocities, Torques -> Accelerations)
-- Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques)
-- Implement own classes for twist (minimal velocity, acceleration representation) and Wrench (minimal force representation)
+- Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques) (started)
+- Own classes for twist (minimal velocity, acceleration representation) :white_check_mark: and Wrench (minimal force representation)
+- Implementation of joint limits (is this compatible with IK?)
 - Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths.
 
 ## Authors
