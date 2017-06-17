@@ -38,10 +38,8 @@ namespace robo {
 
 	// Operators
     Frame& Frame::operator =(const Frame& other){
-        if(this != &other){
-            origin = other.origin;
-            orientation = other.orientation;
-        }
+        origin = other.origin;
+        orientation = other.orientation;
         return *this;
     }
 

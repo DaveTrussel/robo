@@ -8,11 +8,7 @@ namespace robo {
 	// Constructors
 	Joint::Joint(const int id_in, const Frame frame_in, const Eigen::Vector3d axis_in, 
 		const JointType type_in):
-	id(id_in), frame(frame_in), axis(axis_in), type(type_in){}
-
-	Joint::Joint(const int id_in, const Eigen::Vector3d origin_in, const Eigen::Vector3d axis_in, 
-		const JointType type_in):
-	id(id_in), frame(origin_in), axis(axis_in), type(type_in){}
+	id(id_in), type(type_in), axis(axis_in), frame(frame_in){}
 
 	// Member functions
 	Frame Joint::pose(const double& q)const{

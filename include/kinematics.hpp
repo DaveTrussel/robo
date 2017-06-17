@@ -9,17 +9,14 @@ namespace robo{
 	class Kinematics{
 	public:
 		// Members
+		double error_norm_IK;
 		Chain chain;
 		Frame f_end; // frame at the end of the chain 
 		Eigen::VectorXd q_out; // result of inverse kinematics
 		std::vector<Frame> link_tips; // Frames at end of each link
 		Eigen::MatrixXd jacobian;
 		Vector6d weights_IK; // weigths of the IK algorithm (3 position and 3 orientation)
-		int max_iter;
-		double eps;
-    	double eps_joints;
-    	int error;
-    	double error_norm_IK;
+
 
     	// Error code constants 
     	// TODO make this an enum class for clarity e.g. InvKinStatus::no_error?
@@ -30,11 +27,6 @@ namespace robo{
 		
     	// Constructors
 		Kinematics(const Chain& chain,
-                   int max_iter=500,
-                   double eps=1e-5,
-                   double eps_joints=1e-16);
-
-		Kinematics(const Chain& chain, Vector6d weights_IK,
                    int max_iter=500,
                    double eps=1e-5,
                    double eps_joints=1e-16);
@@ -63,6 +55,8 @@ namespace robo{
 		// Members
 		int nr_joints;
 		int nr_links;
+    	int error;
+
 		Eigen::VectorXd q; // Joint positions
 		Eigen::VectorXd delta_q;
 		Eigen::VectorXd weights_damping;
@@ -75,6 +69,10 @@ namespace robo{
 		
 		std::vector<Frame> joint_roots;
 		std::vector<Frame> joint_tips;
+
+		int max_iter;
+		double eps;
+    	double eps_joints;
 	};
 
 }	
