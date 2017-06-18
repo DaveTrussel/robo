@@ -40,17 +40,17 @@ int main () {
 	Twist twist(axis_y, axis_z);
 	twist = twist*3.0;
 	cout << "Twist Test:" << endl 
-		 << "twist.linear=" << endl << twist.linear << endl 
-		 << "twist.rotation=" << endl << twist.rotation << endl
+		 << "twist.linear =" << twist.linear.transpose() 
+		 << " twist.rotation =" << twist.rotation.transpose() << endl
 		 << "Functions: " << endl
-		 << rotate_twist(joint_ellbow.pose(0.5).orientation, twist).rotation << endl
-		 << change_twist_reference(twist, axis_y).linear << endl <<endl;;
+		 << rotate_twist(joint_ellbow.pose(0.5).orientation, twist).rotation.transpose() << endl
+		 << change_twist_reference(twist, axis_y).linear.transpose() << endl <<endl;;
 
 	cout << "Joint Test:" << endl 
 		 << "Pose(0.5)=" << endl << joint_ellbow.pose(0.5).origin << endl 
 		 << joint_ellbow.pose(0.5).orientation << endl 
-		 << " Twist(0.5)=" << endl << joint_ellbow.twist(0.5).linear << endl 
-		 << joint_ellbow.twist(0.5).rotation << endl << endl;;
+		 << " Twist(0.5)=" << joint_ellbow.twist(0.5).linear.transpose() 
+		 << joint_ellbow.twist(0.5).rotation.transpose() << endl << endl;;
 
 	
 	Eigen::Vector3d length;
@@ -86,8 +86,8 @@ int main () {
  	Eigen::VectorXd dq(chain.nr_joints);
  	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
 
- 	cout << "Desired position: " << endl << q << endl;
- 	cout << "Inital position: " << endl << q_init << endl;
+ 	cout << "Desired position: "  << q.transpose() << endl;
+ 	cout << "Inital position: " << q_init.transpose() << endl;
 
  	auto tic = now();
  	kin.joint_to_cartesian(q);
@@ -98,7 +98,7 @@ int main () {
  		 << "Solved forward kinematics in: " << duration << " Microseconds." << endl
  	     << "Frame at end of robot chain:" << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl << endl
  	     << "As a homogeneous matrix:" << endl << kin.f_end.as_homogeneous_matrix() << endl << endl
- 	     << "It's nautical_angles:" << endl << kin.f_end.nautical_angles() << endl;
+ 	     << "It's nautical_angles:" << kin.f_end.nautical_angles().transpose() << endl;
 
  	tic = now();
     kin.calculate_jacobian(q);
@@ -122,6 +122,5 @@ int main () {
     
     cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
     cout << "Weighted error norm to target (cartesian): " << endl << kin.error_norm_IK << endl; 
- 	cout << "Inital seperation norm (joint space): " << (q - q_init).norm() <<  endl;
  	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 test
  } 
