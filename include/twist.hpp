@@ -14,9 +14,9 @@ namespace robo {
 		// Constructors
 		explicit Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){};
 		
-		explicit Twist(const Eigen::Vector3d& lin): linear(lin), rotation(Eigen::Vector3d()){};
+		explicit Twist(const Eigen::Vector3d& lin): linear(lin), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
 		
-		Twist(): linear(Eigen::Vector3d(0.0, 0.0, 0.0)), rotation(Eigen::Vector3d()){};
+		Twist(): linear(Eigen::Vector3d(0.0, 0.0, 0.0)), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
 
 		// Operators
 		Twist& operator =(const Twist& other){
@@ -24,7 +24,6 @@ namespace robo {
         	rotation = other.rotation;
         	return *this;
 		};
-
 	};
 
 

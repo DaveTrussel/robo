@@ -1,6 +1,7 @@
 #pragma once
 
 #include "twist.hpp"
+#include "wrench.hpp"
 #include <Eigen/Dense>
 
 namespace robo {
@@ -42,6 +43,11 @@ namespace robo {
 	inline Frame operator *(const Frame& left, const Frame& right){
 			return Frame(left.orientation*right.origin+left.origin,
 						 left.orientation*right.orientation);
+	};
+
+	inline Wrench operator *(Frame frame, Wrench wrench){
+		return Wrench(frame.orientation*wrench.force,
+					  frame.orientation*wrench.torque + frame.origin.cross(wrench.force));
 	};
 
 	Vector6d operator -(const Frame& left, const Frame& right);

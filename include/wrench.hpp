@@ -1,5 +1,6 @@
 #pragma once
 
+#include "twist.hpp"
 #include <Eigen/Dense>
 
 namespace robo {
@@ -12,23 +13,35 @@ namespace robo {
 		Eigen::Vector3d torque;
 
 		// Constructors
-		explicit Wrench(const Eigen::Vector3d& force, const Eigen::Vector3d& torque);
+		explicit Wrench(const Eigen::Vector3d& force_, const Eigen::Vector3d& torque_): force(force_), torque(torque_){};
 		
-		explicit Wrench(const Eigen::Vector3d& force);
+		explicit Wrench(const Eigen::Vector3d& force_): force(force_), torque(Eigen::Vector3d(0.0, 0.0, 0.0)){};
 		
-		Wrench();
+		Wrench(): force(Eigen::Vector3d(0.0, 0.0, 0.0)), torque(Eigen::Vector3d(0.0, 0.0, 0.0)){};
+
+		double dot(const Twist& twist){
+			return twist.linear.dot(force) + twist.rotation.dot(torque);
+		};
 
 		// Operators
-		Wrench& operator =(const Wrench& other);
+		Wrench& operator =(const Wrench& other){
+			force = other.force;
+			torque = other.torque;
+			return *this;
+		};
 
 	};
 
-	Wrench operator -(const Wrench& lhs, const Wrench& rhs);
+	inline Wrench operator -(const Wrench& lhs, const Wrench& rhs){
+		return Wrench(lhs.force - rhs.force, lhs.torque - rhs.torque);
+	};
 
-	Wrench operator *(const Eigen::Matrix3d& rot, const Wrench& wrench);
+	inline Wrench operator *(const double& val, const Wrench& wrench){
+		return Wrench(val*wrench.force, val*wrench.torque);
+	};
 
-	Wrench operator *(const double& val, const Wrench& wrench);
-
-	Wrench operator *(const Wrench& wrench, const double& val);
+	inline Wrench operator *(const Wrench& wrench, const double& val){
+		return Wrench(val*wrench.force, val*wrench.torque);
+	};
 
 }
