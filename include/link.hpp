@@ -14,8 +14,7 @@ namespace robo{
 		Matrix6d inertia_matrix;
 
 		// Constructors
-		Link(int id_, const Joint& joint_, const Frame& tip_):
-		id(id_), joint(joint_), tip(tip_){};
+		Link(int id_, const Joint& joint_, const Frame& tip_): id(id_), joint(joint_), tip(tip_){};
 
 		// Member functions
 		Frame pose(const double& q)const{
