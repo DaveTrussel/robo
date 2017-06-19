@@ -3,6 +3,7 @@
 #include "../include/joint.hpp"
 #include "../include/frame.hpp"
 #include "../include/kinematics.hpp"
+#include "../include/dynamics.hpp"
 
 #include <Eigen/Dense>
 
@@ -83,9 +84,6 @@ int main () {
  	Eigen::VectorXd q_init(chain.nr_joints);
     q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
  	
- 	Eigen::VectorXd dq(chain.nr_joints);
- 	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
-
  	cout << "Desired position: "  << q.transpose() << endl;
  	cout << "Inital position: " << q_init.transpose() << endl;
 
@@ -123,4 +121,14 @@ int main () {
     cout << "Corresponding forward postion: " << endl << kin.f_end.origin << endl << kin.f_end.orientation << endl;
     cout << "Weighted error norm to target (cartesian): " << endl << kin.error_norm_IK << endl; 
  	// TODO introduce a test that compares error norm at end vs. initial error over e.g. 1000 test
+
+ 	Eigen::VectorXd dq(chain.nr_joints);
+ 	dq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+
+
+ 	Eigen::VectorXd ddq(chain.nr_joints);
+ 	ddq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+
+ 	Dynamics dyn = Dynamics(chain);
+
  } 

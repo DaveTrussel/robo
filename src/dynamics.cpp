@@ -7,10 +7,12 @@ namespace robo{
 	Dynamics::Dynamics(const Chain& chain_):chain(chain_){}
 
 	int Dynamics::calculate_torques(const Eigen::VectorXd& q_, const Eigen::VectorXd& dq_,
-							  const Eigen::VectorXd& ddq_, const Eigen::Vector3d& gravity_){
+							        const Eigen::VectorXd& ddq_, const Eigen::Vector3d& gravity_,
+							        const std::vector<Wrench>& wrenches_extern){
 		double q, dq, ddq;
 		Twist link_twist;
 		Eigen::Matrix3d to_link_rot;
+		Matrix6d inertia;
 
 		Twist gravity{gravity_, Eigen::Vector3d(0.0, 0.0, 0.0)};
 
@@ -49,21 +51,25 @@ namespace robo{
 										   multiply_twists(velocities[iter_link], link_twist);
 			}
 
-			// TODO calculate wrench acting on current link 
-
+			// calculate wrench acting on current link
+			inertia = chain.links[iter_link].inertia_matrix;
+			wrenches[iter_link] = inertia * accelerations[iter_link] +
+								  velocities[iter_link].cross(inertia * velocities[iter_link]) +
+								  - wrenches_extern[iter_link];
+			// TODO define inertia_matrix * twist
 		}
 
 		// Back from tip to root
 		iter_joint = chain.nr_joints;
 		for(int iter_link=chain.nr_links-1; iter_link>=0; --iter_link){
 			if(chain.links[iter_link].has_joint()){
-				// TODO calculate torque (unit twist * wrench)
+				// calculate torque (unit twist * wrench)
+				joint_torques[--iter_joint] = wrenches[iter_link].dot(unit_twists[iter_link]);
 			}
-
 			if(iter_link>0){
-				// TODO add wrench of this link to lower link's wrench (transform into lower frame)
+				// add wrench of this link to lower link's wrench (transform into lower frame)
+				wrenches[iter_link-1] = wrenches[iter_link-1] + link_frames[iter_link]*wrenches[iter_link];
 			}
-
 		}
 		return 1;
 	}

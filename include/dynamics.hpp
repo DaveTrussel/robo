@@ -16,7 +16,8 @@ namespace robo{
 		
 		// Member functions
 		int calculate_torques(const Eigen::VectorXd& q, const Eigen::VectorXd& dq,
-							  const Eigen::VectorXd& ddq, const Eigen::Vector3d& gravity);
+							  const Eigen::VectorXd& ddq, const Eigen::Vector3d& gravity,
+							  const std::vector<Wrench>& wrenches_extern);
 	private:
 		// Members
 		Chain chain;
@@ -24,6 +25,7 @@ namespace robo{
 		std::vector<Twist> unit_twists; // S
 		std::vector<Twist> velocities;
 		std::vector<Twist> accelerations;
+		std::vector<Wrench> wrenches;
 	};
 
 }	

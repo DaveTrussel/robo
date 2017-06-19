@@ -32,8 +32,12 @@ namespace robo {
 
 	};
 
-	inline Wrench operator -(const Wrench& lhs, const Wrench& rhs){
+	inline Wrench operator +(const Wrench& lhs, const Wrench& rhs){
 		return Wrench(lhs.force - rhs.force, lhs.torque - rhs.torque);
+	};
+
+	inline Wrench operator -(const Wrench& lhs, const Wrench& rhs){
+		return Wrench(lhs.force + rhs.force, lhs.torque + rhs.torque);
 	};
 
 	inline Wrench operator *(const double& val, const Wrench& wrench){
