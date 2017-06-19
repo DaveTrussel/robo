@@ -22,7 +22,7 @@ namespace robo {
 		else{
 			return Frame(frame);
 		}
-	}
+	}s
 
 	Twist Joint::twist(const double &dq)const{
 		Eigen::Vector3d speed_lin;
