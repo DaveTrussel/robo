@@ -48,4 +48,8 @@ namespace robo {
 		return Wrench(val*wrench.force, val*wrench.torque);
 	};
 
+	inline Wrench operator *(const Twist& twist, const Wrench& wrench){
+		return Wrench(twist.rotation.cross(wrench.force), twist.rotation.cross(wrench.torque)+twist.linear.cross(wrench.force));
+	};
+
 }

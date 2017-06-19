@@ -6,6 +6,8 @@
 
 namespace robo {
 
+	using Vector3d = Eigen::Vector3d;
+	using Matrix3d = Eigen::Matrix3d;
 	using Vector6d = Eigen::Matrix<double, 6, 1>;
 	using Matrix6Xd = Eigen::Matrix<double, 6, Eigen::Dynamic>;
 	using Matrix6d = Eigen::Matrix<double, 6, 6>;

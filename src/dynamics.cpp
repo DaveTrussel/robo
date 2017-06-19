@@ -12,7 +12,7 @@ namespace robo{
 		double q, dq, ddq;
 		Twist link_twist;
 		Eigen::Matrix3d to_link_rot;
-		Matrix6d inertia;
+		Inertia inertia;
 
 		Twist gravity{gravity_, Eigen::Vector3d(0.0, 0.0, 0.0)};
 
@@ -54,8 +54,8 @@ namespace robo{
 			// calculate wrench acting on current link
 			inertia = chain.links[iter_link].inertia_matrix;
 			wrenches[iter_link] = inertia * accelerations[iter_link] +
-								  velocities[iter_link].cross(inertia * velocities[iter_link]) +
-								  - wrenches_extern[iter_link];
+								  velocities[iter_link] * (inertia * velocities[iter_link]) -
+								  wrenches_extern[iter_link];
 			// TODO define inertia_matrix * twist
 		}
 

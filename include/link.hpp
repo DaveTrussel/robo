@@ -1,5 +1,6 @@
 #pragma once
 
+#include "inertia.hpp"
 #include "joint.hpp"
 #include <Eigen/Dense>
 
@@ -11,7 +12,7 @@ namespace robo{
 		int id;
 		Joint joint;
 		Frame tip;
-		Matrix6d inertia_matrix;
+		Inertia inertia_matrix;
 
 		// Constructors
 		Link(int id_, const Joint& joint_, const Frame& tip_): id(id_), joint(joint_), tip(tip_){};

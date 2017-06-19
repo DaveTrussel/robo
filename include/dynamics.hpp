@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chain.hpp"
+#include "inertia.hpp"
 #include <Eigen/Dense>
 #include <vector>
 
