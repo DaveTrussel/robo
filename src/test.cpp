@@ -45,7 +45,7 @@ int main () {
 		 << " twist.rotation =" << twist.rotation.transpose() << endl
 		 << "Functions: " << endl
 		 << rotate_twist(joint_ellbow.pose(0.5).orientation, twist).rotation.transpose() << endl
-		 << change_twist_reference(twist, axis_y).linear.transpose() << endl <<endl;;
+		 << change_twist_reference(twist, axis_y).linear.transpose() << endl <<endl;
 
 	cout << "Joint Test:" << endl 
 		 << "Pose(0.5)=" << endl << joint_ellbow.pose(0.5).origin << endl 
@@ -59,14 +59,16 @@ int main () {
 	Frame tip = Frame(length);
     Frame i_want_a_copy;
     i_want_a_copy = tip;
+
+    Inertia inertia = Inertia(1.0, length/2);
 	
-	Link link_0 = Link(0, joint_none, tip);
-	Link link_1 = Link(1, joint_wrist, tip);
-	Link link_2 = Link(2, joint_ellbow, tip);
-	Link link_3 = Link(3, joint_ellbow, tip);
-	Link link_4 = Link(4, joint_wrist, tip);
-	Link link_5 = Link(5, joint_ellbow, tip);
-	Link link_6 = Link(6, joint_wrist, tip);
+	Link link_0 = Link(0, joint_none, tip, inertia);
+	Link link_1 = Link(1, joint_wrist, tip, inertia);
+	Link link_2 = Link(2, joint_ellbow, tip, inertia);
+	Link link_3 = Link(3, joint_ellbow, tip, inertia);
+	Link link_4 = Link(4, joint_wrist, tip, inertia);
+	Link link_5 = Link(5, joint_ellbow, tip, inertia);
+	Link link_6 = Link(6, joint_wrist, tip, inertia);
 	
 	Chain chain;
 	chain.addLink(link_0);
@@ -130,5 +132,14 @@ int main () {
  	ddq << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
 
  	Dynamics dyn = Dynamics(chain);
+
+ 	tic = now();
+ 	dyn.calculate_torques(q, dq, ddq);
+ 	toc = now();
+ 	duration = duration_cast<microseconds>( toc - tic ).count();
+
+ 	cout << "Dynamics Test:" << endl 
+ 		 << "Solved inverse dynamics in: " << duration << " Microseconds." << endl
+		 << "Joint torques:" << endl << dyn.joint_torques << endl;
 
  } 

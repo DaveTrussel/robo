@@ -12,9 +12,15 @@ namespace robo{
 		** All values must be given with respect to the specified frame
 		*/
 		explicit Inertia(const Frame& frame_, const double& mass_,const Vector3d& com_,const Matrix3d& rot_): 
-			frame(frame_), mass(mass_), h(com_), rot_inertia(rot_){};
+			frame(frame_), mass(mass_), h(com_*mass_), rot_inertia(rot_){};
 
-		Inertia(): frame(), mass(0.0), h(), rot_inertia(){};
+		explicit Inertia(const double& mass_,const Vector3d& com_,const Matrix3d& rot_): 
+			frame(), mass(mass_), h(com_*mass_), rot_inertia(rot_){};
+
+		explicit Inertia(const double& mass_,const Vector3d& com_): 
+			frame(), mass(mass_), h(com_*mass_), rot_inertia(Matrix3d::Zero()){};
+
+		Inertia(): frame(), mass(0.0), h(Vector3d::Zero()), rot_inertia(Matrix3d::Zero()){};
 
 		Wrench operator *(const Twist& t) const {
 			return Wrench(mass * t.linear - h.cross(t.rotation), rot_inertia * t.rotation + h.cross(t.linear));

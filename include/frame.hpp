@@ -7,31 +7,34 @@
 namespace robo {
 
 	using Vector3d = Eigen::Vector3d;
-	using Matrix3d = Eigen::Matrix3d;
 	using Vector6d = Eigen::Matrix<double, 6, 1>;
-	using Matrix6Xd = Eigen::Matrix<double, 6, Eigen::Dynamic>;
+	using VectorXd = Eigen::VectorXd;
+	using Matrix3d = Eigen::Matrix3d;
+	using Matrix4d = Eigen::Matrix4d;
 	using Matrix6d = Eigen::Matrix<double, 6, 6>;
+	using Matrix6Xd = Eigen::Matrix<double, 6, Eigen::Dynamic>;
+	
 
 	class Frame{
 	public:
 
 		// Members
-		Eigen::Vector3d origin;
-		Eigen::Matrix3d orientation;
+		Vector3d origin;
+		Matrix3d orientation;
 
 		// Constructors
-		Frame(const Eigen::Vector3d& vec, const Eigen::Matrix3d& rot):
+		Frame(const Vector3d& vec, const Matrix3d& rot):
 			origin(vec), orientation(rot){};
 		
-		Frame(const Eigen::Vector3d& vec):
-			origin(vec), orientation(Eigen::Matrix3d::Identity()){};
+		Frame(const Vector3d& vec):
+			origin(vec), orientation(Matrix3d::Identity()){};
 		
 		Frame():
-			origin(Eigen::Vector3d::Zero()), orientation(Eigen::Matrix3d::Identity()){};
+			origin(Vector3d::Zero()), orientation(Matrix3d::Identity()){};
 
 		// Member functions
-		Eigen::Matrix4d as_homogeneous_matrix()const{
-			Eigen::Matrix4d homo = Eigen::Matrix4d::Constant(0.0);
+		Matrix4d as_homogeneous_matrix()const{
+			Matrix4d homo = Matrix4d::Constant(0.0);
 			homo.block(0,0,3,3) = orientation;
 			homo.block(0,3,3,1) = origin;
 			homo.row(3) << 0.0, 0.0, 0.0, 1.0;
@@ -67,10 +70,9 @@ namespace robo {
 	inline Vector6d operator -(const Frame& left, const Frame& right){
 		Vector6d delta_frame;
 		delta_frame.block<3,1>(0,0) << left.origin - right.origin;
-		Eigen::Matrix3d rotinvrot;
+		Matrix3d rotinvrot;
 		rotinvrot << left.orientation.inverse() * right.orientation; 
 		Eigen::AngleAxisd angle_axis(rotinvrot);
-		Eigen::Vector3d angular;
 		delta_frame.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); 
 		return delta_frame;
 	};

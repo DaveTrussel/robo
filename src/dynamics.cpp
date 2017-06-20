@@ -4,11 +4,12 @@
 namespace robo{
 
 	// Constructors
-	Dynamics::Dynamics(const Chain& chain_):chain(chain_){}
+	Dynamics::Dynamics(const Chain& chain_): joint_torques(chain_.nr_joints), chain(chain_), nr_links(chain_.nr_links), nr_joints(chain_.nr_joints),
+		link_frames(nr_links), unit_twists(nr_links), velocities(nr_links), accelerations(nr_links), wrenches(nr_links){}
 
-	int Dynamics::calculate_torques(const Eigen::VectorXd& q_, const Eigen::VectorXd& dq_,
-							        const Eigen::VectorXd& ddq_, const Eigen::Vector3d& gravity_,
-							        const std::vector<Wrench>& wrenches_extern){
+	int Dynamics::calculate_torques(const Eigen::VectorXd& q_, const Eigen::VectorXd& dq_, const Eigen::VectorXd& ddq_,
+									const std::vector<Wrench>& wrenches_extern,
+							        const Eigen::Vector3d& gravity_){
 		double q, dq, ddq;
 		Twist link_twist;
 		Eigen::Matrix3d to_link_rot;
@@ -52,11 +53,10 @@ namespace robo{
 			}
 
 			// calculate wrench acting on current link
-			inertia = chain.links[iter_link].inertia_matrix;
+			inertia = chain.links[iter_link].inertia;
 			wrenches[iter_link] = inertia * accelerations[iter_link] +
 								  velocities[iter_link] * (inertia * velocities[iter_link]) -
 								  wrenches_extern[iter_link];
-			// TODO define inertia_matrix * twist
 		}
 
 		// Back from tip to root
