@@ -20,9 +20,13 @@ namespace robo{
 							  const std::vector<Wrench>& wrenches_extern,
 							  const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665));
 
-		int calculate_torques(const VectorXd& q, const VectorXd& dq,const VectorXd& ddq,
+		inline int calculate_torques(const VectorXd& q, const VectorXd& dq,const VectorXd& ddq,
 							  const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665)){
 			return calculate_torques(q, dq, ddq, std::vector<Wrench>(chain.nr_links), gravity);
+		};
+
+		inline int calculate_torques(const VectorXd& q, const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665)){
+			return calculate_torques(q, VectorXd::Zero(chain.nr_joints), VectorXd::Zero(chain.nr_joints), std::vector<Wrench>(chain.nr_links), gravity);
 		};
 	
 	private:
