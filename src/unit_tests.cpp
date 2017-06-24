@@ -6,15 +6,14 @@
 
 #include <Eigen/Dense>
 
-
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
 using namespace robo;
 
 // Helper functions
-void compare_vectors_approx(Eigen::Vector3d a, Eigen::Vector3d b){
+void compare_vectors_approx(Eigen::Vector3d a, Eigen::Vector3d b, double eps=1e-15){
 	for(int i=0; i<3; ++i){
-            		REQUIRE(a[i] == Approx(b[i]).epsilon(1e-15));
+            		REQUIRE(a[i] == Approx(b[i]).epsilon(eps));
             	}
 }
 
@@ -44,7 +43,7 @@ SCENARIO("Joint tests"){
 }
 
 
-SCENARIO("Kinematics"){
+SCENARIO("Kinematics tests"){
     GIVEN("6-axis robot manipulator (none, wrist, ellbow, ellbow, wrist, ellbow, wrist). Links each 1m."){
         Eigen::Vector3d axis_z, axis_y;
 		axis_y << 0.0, 1.0, 0.0;
@@ -105,10 +104,27 @@ SCENARIO("Kinematics"){
             kin.joint_to_cartesian(q);
             Frame res = kin.f_end;
             THEN("Endeffector at (5, 0, 2)"){
-            	Eigen::Vector3d pos(0.0, 5.0, 2.0);
-            	for(int i=0; i<3; ++i){
-            		REQUIRE(res.origin[i] == Approx(pos[i]).epsilon(1e-15));
-            	}
+            	Eigen::Vector3d position(0.0, 5.0, 2.0);
+            	compare_vectors_approx(res.origin, position);
+            }
+        }
+        WHEN("Inverse kinematics: Target (0, 5, 2)"){
+            q = Eigen::VectorXd::Zero(chain.nr_joints);
+            q[0] = pi/2.0;
+            q[1] = pi/2.0;
+            Eigen::VectorXd q_init = Eigen::VectorXd::Zero(chain.nr_joints);
+            kin.joint_to_cartesian(q);
+            Frame target = kin.f_end;
+            int error = kin.cartesian_to_joint(target, q_init);
+            Eigen::VectorXd res = kin.q_out;
+            kin.joint_to_cartesian(res);
+            Frame check = kin.f_end;
+            THEN("No error"){
+                REQUIRE(error == 1);
+            }
+
+            THEN("Result of IK  yields almost same point through FK"){
+                compare_vectors_approx(check.origin, target.origin, 1e-5);
             }
         } 
     }
