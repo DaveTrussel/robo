@@ -13,8 +13,8 @@ using namespace robo;
 // Helper functions
 void compare_vectors_approx(Eigen::Vector3d a, Eigen::Vector3d b, double eps=1e-15){
 	for(int i=0; i<3; ++i){
-            		REQUIRE(a[i] == Approx(b[i]).epsilon(eps));
-            	}
+        REQUIRE(a[i] == Approx(b[i]).epsilon(eps));
+    }
 }
 
 SCENARIO("Joint tests"){
@@ -128,5 +128,53 @@ SCENARIO("Kinematics tests"){
             }
         } 
     }
+}
+
+SCENARIO("Dynamics tests"){
+    GIVEN("6-axis robot manipulator (none, wrist, ellbow, ellbow, wrist, ellbow, wrist). Links each 1m."){
+        Eigen::Vector3d axis_z, axis_y;
+        axis_y << 0.0, 1.0, 0.0;
+        axis_z << 0.0, 0.0, 1.0;
+        Frame f = Frame();
+        Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
+        Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
+        Joint joint_none = Joint(0, f, axis_z, JointType::None);
+        Eigen::Vector3d length;
+        length << 0.0, 0.0, 1.0;
+        Frame tip = Frame(length);
+        Inertia inertia = Inertia(1.0, length/2);
+
+        Link link_0 = Link(0, joint_none, tip, inertia);
+        Link link_1 = Link(1, joint_wrist, tip, inertia);
+        Link link_2 = Link(2, joint_ellbow, tip, inertia);
+        Link link_3 = Link(3, joint_ellbow, tip, inertia);
+        Link link_4 = Link(4, joint_wrist, tip, inertia);
+        Link link_5 = Link(5, joint_ellbow, tip, inertia);
+        Link link_6 = Link(6, joint_wrist, tip, inertia);
+        
+        Chain chain;
+        chain.addLink(link_0);
+        chain.addLink(link_1);
+        chain.addLink(link_2);
+        chain.addLink(link_3);
+        chain.addLink(link_4);
+        chain.addLink(link_5);
+        chain.addLink(link_6);
+
+        Dynamics dyn = Dynamics(chain);
+
+        Eigen::VectorXd q(chain.nr_joints);
+        Eigen::VectorXd dq(chain.nr_joints);
+        Eigen::VectorXd ddq(chain.nr_joints);
+
+        WHEN("Inverse Dynamics: Home position"){
+            q = Eigen::VectorXd::Zero(chain.nr_joints);
+            dyn.calculate_torques(q);
+            Eigen::VectorXd res = dyn.joint_torques;
+            THEN("No torques at home position"){
+                REQUIRE(res == Eigen::VectorXd::Zero(chain.nr_joints));
+            }
+        }
+    }   
 }
 
