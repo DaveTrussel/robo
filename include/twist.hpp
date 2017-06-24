@@ -12,32 +12,52 @@ namespace robo {
 		Eigen::Vector3d rotation;
 
 		// Constructors
-		explicit Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot);
+		explicit Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){};
 		
-		explicit Twist(const Eigen::Vector3d& lin);
+		explicit Twist(const Eigen::Vector3d& lin): linear(lin), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
 		
-		Twist();
+		Twist(): linear(Eigen::Vector3d(0.0, 0.0, 0.0)), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
 
 		// Operators
-		Twist& operator =(const Twist& other);
-
+		Twist& operator =(const Twist& other){
+			linear = other.linear;
+        	rotation = other.rotation;
+        	return *this;
+		};
 	};
 
 
-	Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist);
+	inline Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist){
+		return Twist(rot * twist.linear, rot * twist.rotation);
+	};
 
-	Twist change_twist_reference(const Twist& twist, const Eigen::Vector3d& delta_ref);
+	inline Twist change_twist_reference(const Twist& twist, const Eigen::Vector3d& delta_ref){
+		return Twist(twist.linear + delta_ref.cross(twist.rotation), twist.rotation);
+	};
 
-	Twist multiply_twists(const Twist& lhs, const Twist& rhs);
+	inline Twist multiply_twists(const Twist& lhs, const Twist& rhs){
+		return Twist(lhs.rotation.cross(rhs.linear) + lhs.linear.cross(rhs.rotation), lhs.rotation.cross(rhs.rotation));
+	};
 
-	Twist operator +(const Twist& lhs, const Twist& rhs);
+	inline Twist operator +(const Twist& lhs, const Twist& rhs){
+		return Twist(lhs.linear+rhs.linear, lhs.rotation+rhs.rotation);
+	};
 
-	Twist operator *(const Twist& lhs, const Twist& rhs);
+	inline Twist operator *(const Twist& lhs, const Twist& rhs){
+		return Twist(lhs.rotation.cross(rhs.linear) + lhs.linear.cross(rhs.rotation),
+			         lhs.rotation.cross(rhs.rotation));
+	};
 
-	Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist);
+	inline Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist){
+		return Twist(rot * twist.linear, rot * twist.rotation);
+	};
 
-	Twist operator *(const double& val, const Twist& twist);
+	inline Twist operator *(const double& val, const Twist& twist){
+		return Twist(twist.linear*val, twist.rotation*val);
+	};
 
-	Twist operator *(const Twist& twist, const double& val);
+	inline Twist operator *(const Twist& twist, const double& val){
+		return Twist(twist.linear*val, twist.rotation*val);
+	};
 
 }

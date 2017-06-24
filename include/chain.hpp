@@ -1,7 +1,6 @@
 #pragma once
 
 #include "link.hpp"
-#include <Eigen/Dense>
 #include <vector>
 
 namespace robo{
@@ -12,9 +11,15 @@ namespace robo{
 		int nr_links;
 		std::vector<Link> links;
 
-		Chain();
+		Chain():nr_joints(0), nr_links(0){};
 		
-		void addLink(const Link& link);
+		void addLink(const Link& link){
+			links.push_back(link);
+			++nr_links;
+			if(link.has_joint()){
+				++nr_joints;
+			}
+		};
 	};
 
 }	

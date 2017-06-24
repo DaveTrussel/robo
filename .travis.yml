@@ -40,6 +40,7 @@ matrix:
 script:
 - cmake --version
 - mkdir build && cd build
-- cmake -DCMAKE_CXX_COMPILER=$COMPILER ..
+- cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=RELEASE ..
 - make
-- ./testing
+- ./test_unit
+- ./test_time
