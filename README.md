@@ -2,9 +2,10 @@
 
 [![Build Status](https://travis-ci.org/DaveTrussel/robo.svg?branch=master)](https://travis-ci.org/DaveTrussel/robo)
 
+This C++ project is intended to provide a simple way of modelling robotic chain manipulators and be used for their control. It lets you calculte the forward and inverse kinematics and dynamics of the robot.
 Built with the following compilers: g++5, g++6, clang++3.6, clang++3.9
+GPLv3.
 
-This project is intended to provide a simple interface to model robotic manipulators. 
 
 ## Getting Started
 
@@ -26,27 +27,31 @@ This project uses the Cmake build system
 ```
 mkdir build && cd build
 cmake ..
+make -j4
 ```
 
-For now only a test application is build. Maybe build a shared or static lib instead later into the project.
+For now only the test applications are built. Depending on the later design choices providing a shared library or a ROS2 package will be considered.
 
 ## Running the tests
 
-Basic functionality is currently tested in the `testing` executable.
-
+The unit tests are currently all in the test_unit executable.
+The tests can be run from the build directory like this:
 
 ```
-./testing
+./test_unit
+sudo chrt 98 ./test_time
 ```
 
 ### Basic Usage
 Here is a basic example (TODO add includes)
 
 ```cpp
+#include "kinematics.hpp"
+#include "dynamics.hpp"
 using namespace robo;
 
 // Define axes of rotation
-Eigen::Vector3d axis_z, axis_y;
+Vector3d axis_z, axis_y;
 axis_y << 0.0, 1.0, 0.0;
 axis_z << 0.0, 0.0, 1.0;
 
@@ -59,18 +64,20 @@ Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
 Joint joint_none = Joint(0, f, axis_z, JointType::None);
 
 // Simplified case with all same link lengths
-Eigen::Vector3d length;
+Vector3d length;
 length << 0.0, 0.0, 1.0;
 Frame tip = Frame(length);
 
+Inertia inertia = Inertia(1.0, length/2);
+
 // Create links
-Link link_0 = Link(0, joint_none, tip);
-Link link_1 = Link(1, joint_wrist, tip);
-Link link_2 = Link(2, joint_ellbow, tip);
-Link link_3 = Link(3, joint_ellbow, tip);
-Link link_4 = Link(4, joint_wrist, tip);
-Link link_5 = Link(5, joint_ellbow, tip);
-Link link_6 = Link(6, joint_wrist, tip);
+Link link_0 = Link(0, joint_none, tip, inertia);
+Link link_1 = Link(1, joint_wrist, tip, inertia);
+Link link_2 = Link(2, joint_ellbow, tip, inertia);
+Link link_3 = Link(3, joint_ellbow, tip, inertia);
+Link link_4 = Link(4, joint_wrist, tip, inertia);
+Link link_5 = Link(5, joint_ellbow, tip, inertia);
+Link link_6 = Link(6, joint_wrist, tip, inertia);
 
 // Create a chain out of links
 Chain chain;
@@ -82,21 +89,30 @@ chain.addLink(link_4);
 chain.addLink(link_5);
 chain.addLink(link_6);
 	
-ForwardKinematics fk = ForwardKinematics(chain);
+Kinematics kin = Kinematics(chain);
+Dynamics dyn = Dynamics(chain);
 
-Eigen::VectorXd q(chain.nr_links);
-q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
-std::vector<Frame> f_out(chain.nr_links);
+VectorXd q(chain.nr_joints); // joint positions
+VectorXd dq(chain.nr_joints); // joint velocities
+VectorXd ddq(chain.nr_joints); // joint acclerations
+VectorXd q_init(chain.nr_joints); // initial position for inverse kinematics
+q 	<< 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+dq 	<< 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+ddq 	<< 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+q_init 	<< 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2;
 
-TimePoint tic = now();
-fk.joint2cartesian(q, f_out); // Solve forward  kinematics
-TimePoint toc = now();
+// Solve forward kinematics
+kin.joint_to_cartesian(q);
+Frame result_fk = kin.f_end;
 
-auto duration = duration_cast<microseconds>( toc - tic ).count();
+// Solve inverse kinematics
+Frame f_target = result_fk;
+int error_code = kin.cartesian_to_joint(f_target, q_init);
+VectorXd result_ik = kin.q_out;
 
-cout << "Solved forward kinematics in: " << duration << " Microseconds." << endl;
-cout << "Frame at end of robot chain:" << endl << f_out.at(chain.nr_links-1).origin << endl << f_out.at(chain.nr_links-1).orientation << endl;
-cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-1).as_homogeneous_matrix() << endl;
+// Solve inverse dynamics
+dyn.calculate_torques(q, dq, ddq);
+VectorXd result_id = dyn.joint_torques;
 ```
 
 ## TODO
@@ -104,10 +120,12 @@ cout << endl << "And as homogeneous matrix:" << endl << f_out.at(chain.nr_links-
 - Forward Kinematics (joint coordinates to cartesian coordinates)  :white_check_mark:
 - Inverse Kinematics (cartesian coordinates to joint coordinates) (Based on a damped Levenberg-Marquart algorithm. Inspired by this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) which showed high success rate for the recommended LM method.) :white_check_mark:
 - Dynamic Model (Positions, Velocities, Torques -> Accelerations)
-- Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques) (started)
-- Own classes for twist (minimal velocity, acceleration representation) :white_check_mark: and Wrench (minimal force representation)
+- Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques) :white_check_mark:
+- Own classes for twist (minimal velocity, acceleration representation) :white_check_mark: and Wrench (minimal force representation) :white_check_mark:
 - Implementation of joint limits (is this compatible with IK?)
-- Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths.
+- Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. 
+- Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths. :white_check_mark:
+- Add license :white_check_mark:
 
 ## Authors
 
