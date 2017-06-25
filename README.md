@@ -3,8 +3,10 @@
 [![Build Status](https://travis-ci.org/DaveTrussel/robo.svg?branch=master)](https://travis-ci.org/DaveTrussel/robo)
 
 This C++ project is intended to provide a simple way of modelling robotic chain manipulators and be used for their control. It lets you calculte the forward and inverse kinematics and dynamics of the robot.
+
 Built with the following compilers: g++5, g++6, clang++3.6, clang++3.9
-GPLv3.
+
+License: GPLv3.
 
 
 ## Getting Started
@@ -40,6 +42,35 @@ The tests can be run from the build directory like this:
 ```
 ./test_unit
 sudo chrt 98 ./test_time
+
+// Examplary output from the timing tests (on a non-realtime OS)
+==============================
+Forward kinematics
+==============================
+Timing results (in microseconds) from 100000 runs:
+Average: 0.9426
+Median: 1
+Min: 0
+Max: 4101
+
+==============================
+Inverse kinematics
+==============================
+Successrate: 99.994%
+Timing results (in microseconds) from 100000 runs:
+Average: 73.4609
+Median: 64
+Min: 15
+Max: 4593
+
+==============================
+Inverse dynamics
+==============================
+Timing results (in microseconds) from 100000 runs:
+Average: 3.07337
+Median: 3
+Min: 2
+Max: 189
 ```
 
 ### Basic Usage
@@ -115,17 +146,31 @@ dyn.calculate_torques(q, dq, ddq);
 VectorXd result_id = dyn.joint_torques;
 ```
 
+## Implementation details
+Internally rotations are represented as matrices.
+### Forward kinematics
+Recursive
+### Inverse kinematics
+Damped Weighted Levenberg-Marquart algorithm
+### Inverse dynamics
+Recursive Newton-Euler algorithm
+
 ## TODO
 - Basic model (Frames, Joints, Links, Chain)  :white_check_mark:
 - Forward Kinematics (joint coordinates to cartesian coordinates)  :white_check_mark:
-- Inverse Kinematics (cartesian coordinates to joint coordinates) (Based on a damped Levenberg-Marquart algorithm. Inspired by this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) which showed high success rate for the recommended LM method.) :white_check_mark:
-- Dynamic Model (Positions, Velocities, Torques -> Accelerations)
+- Inverse Kinematics (cartesian coordinates to joint coordinates) (Based on a damped Levenberg-Marquart algorithm. Inspired by this paper [here](http://mi.ams.eng.osaka-u.ac.jp/pub/2011/tro2011sugihara.pdf) which showed high success rate for the recommended LM method.) and [here](https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf) :white_check_mark:
 - Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques) :white_check_mark:
 - Own classes for twist (minimal velocity, acceleration representation) :white_check_mark: and Wrench (minimal force representation) :white_check_mark:
-- Implementation of joint limits (is this compatible with IK?)
+- Own classes for inertia :white_check_mark:
 - Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. 
 - Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths. :white_check_mark:
 - Add license :white_check_mark:
+- Dynamic Model (Positions, Velocities, Torques -> Accelerations)
+- Implementation of joint limits (is this compatible with IK?)
+- Define a control concept based on kinematcs / dynamics
+- Add path planing
+- Add friction torques to joints and dynamics
+- Add rotor inertia to joints and dynamics
 
 ## Authors
 
