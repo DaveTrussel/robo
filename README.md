@@ -74,7 +74,7 @@ Max: 189
 ```
 
 ### Basic Usage
-Here is a basic example (TODO add includes)
+Here is a basic example:
 
 ```cpp
 #include "kinematics.hpp"
@@ -171,6 +171,7 @@ Recursive Newton-Euler algorithm
 - Add path planing
 - Add friction torques to joints and dynamics
 - Add rotor inertia to joints and dynamics
+- Avoid self-collision in IK (introduce sphere around each joint? cylinder around each link? do research on this) 
 
 ## Authors
 
