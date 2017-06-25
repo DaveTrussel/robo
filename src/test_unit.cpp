@@ -11,7 +11,7 @@ constexpr auto pi = 3.141592653589793238462643383279502884L;
 using namespace robo;
 
 // Helper functions
-void compare_vectors_approx(Eigen::Vector3d a, Eigen::Vector3d b, double eps=1e-15){
+void compare_vectors_approx(Eigen::Vector3d a, Eigen::Vector3d b, double eps=1e-12){
 	for(int i=0; i<3; ++i){
         REQUIRE(a[i] == Approx(b[i]).epsilon(eps));
     }

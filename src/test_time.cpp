@@ -18,6 +18,7 @@ using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
+constexpr int nr_runs = 1e5;
 
 // helper functions
 #define now() high_resolution_clock::now()
@@ -105,8 +106,6 @@ int main () {
  	kin.joint_to_cartesian(q);
  	auto toc = now();
  	auto duration = duration_cast<microseconds>( toc - tic ).count();
-
- 	constexpr int nr_runs = 100000;
 
  	vector<double> timings;
  	timings.reserve(nr_runs);

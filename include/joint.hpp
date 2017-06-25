@@ -3,6 +3,7 @@
 #include "frame.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <cmath>
 
 
 namespace robo {
@@ -30,8 +31,7 @@ namespace robo {
 		// Member functions
 		Frame pose(const double& q)const{
 			if(type == JointType::Rotational){
-				Matrix3d rotation = (Matrix3d)Eigen::AngleAxisd(q, axis);
-				return Frame(frame.origin, rotation);
+				return Frame(frame.origin, rotate(q));
 			}
 			if(type == JointType::Translational){ 
 				return Frame(frame.origin + q*axis, frame.orientation);
@@ -51,6 +51,32 @@ namespace robo {
 				speed_lin << dq*axis;
 			}
 			return Twist(speed_lin, speed_rot);
+		};
+
+	private:
+		Matrix3d rotate(const double& angle)const{
+			// Euler-Rodrigues formula (rotation around axis by angle)
+			double theta = angle/2.0;
+			double a = std::cos(theta);
+			double sine = std::sin(theta);
+			double b = -sine * axis[0];
+			double c = -sine * axis[1];
+			double d = -sine * axis[2];
+			double aa = a*a;
+			double bb = b*b;
+			double cc = c*c;
+			double dd = d*d;
+			double bc = b*c;
+			double ad = a*d;
+			double ac = a*c;
+			double ab = a*b;
+			double bd = b*d;
+			double cd = c*d;
+			Matrix3d rot;
+			rot << aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac),
+				   2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab),
+				   2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc;
+			return rot; 
 		};
 	};
 
