@@ -12,9 +12,9 @@ namespace robo{
 		double error_norm_IK;
 		Chain chain;
 		Frame f_end; // frame at the end of the chain 
-		Eigen::VectorXd q_out; // result of inverse kinematics
+		VectorXd q_out; // result of inverse kinematics
 		std::vector<Frame> link_tips; // Frames at end of each link
-		Eigen::MatrixXd jacobian;
+		MatrixXd jacobian;
 		Vector6d weights_IK; // weigths of the IK algorithm (3 position and 3 orientation)
 
 
@@ -32,20 +32,20 @@ namespace robo{
                    double eps_joints=1e-16);
 		
 		// Member functions
-		void joint_to_cartesian(const Eigen::VectorXd& q);
+		void joint_to_cartesian(const VectorXd& q);
 		/**
 		* Calculates the forward kinematics
 		* The result is stored in link_tips and f_end
 		*/
 
-		int cartesian_to_joint(const Frame& f_in, const Eigen::VectorXd& q_init);
+		int cartesian_to_joint(const Frame& f_in, const VectorXd& q_init);
 		/**
 		* Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
 		* The result is stored in q_out
 		* Check the return value to see if the solver was sucessfull (==1)
 		*/
 
-		void calculate_jacobian(const Eigen::VectorXd& q);
+		void calculate_jacobian(const VectorXd& q);
 		/**
 		* Calculates the jacobian (calculate forward position before)
 		* The result is stored in jacobian
@@ -57,15 +57,15 @@ namespace robo{
 		int nr_links;
     	int error;
 
-		Eigen::VectorXd q; // Joint positions
-		Eigen::VectorXd delta_q;
-		Eigen::VectorXd weights_damping;
-		Eigen::VectorXd bias;
+		VectorXd q; // Joint positions
+		VectorXd delta_q;
+		VectorXd weights_damping;
+		VectorXd bias;
 		
-		Eigen::MatrixXd jacobian_weighted;
+		MatrixXd jacobian_weighted;
 		
-		Eigen::MatrixXd A; // Linear system: Ax = b
-		Eigen::VectorXd b; // Linear system: Ax = b
+		MatrixXd A; // Linear system: Ax = b
+		VectorXd b; // Linear system: Ax = b
 		
 		std::vector<Frame> joint_roots;
 		std::vector<Frame> joint_tips;

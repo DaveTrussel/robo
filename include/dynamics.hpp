@@ -10,7 +10,7 @@ namespace robo{
 	class Dynamics{
 	public:
 		// Members
-		Eigen::VectorXd joint_torques;
+		VectorXd joint_torques;
 
     	// Constructors
 		Dynamics(const Chain& chain);

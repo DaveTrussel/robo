@@ -7,15 +7,15 @@ namespace robo{
 	Dynamics::Dynamics(const Chain& chain_): joint_torques(chain_.nr_joints), chain(chain_), nr_links(chain_.nr_links), nr_joints(chain_.nr_joints),
 		link_frames(nr_links), unit_twists(nr_links), velocities(nr_links), accelerations(nr_links), wrenches(nr_links){}
 
-	int Dynamics::calculate_torques(const Eigen::VectorXd& q_, const Eigen::VectorXd& dq_, const Eigen::VectorXd& ddq_,
+	int Dynamics::calculate_torques(const VectorXd& q_, const VectorXd& dq_, const VectorXd& ddq_,
 									const std::vector<Wrench>& wrenches_extern,
-							        const Eigen::Vector3d& gravity_){
+							        const Vector3d& gravity_){
 		double q, dq, ddq;
 		Twist link_twist;
-		Eigen::Matrix3d to_link_rot;
+		Matrix3d to_link_rot;
 		Inertia inertia;
 
-		Twist gravity{gravity_, Eigen::Vector3d(0.0, 0.0, 0.0)};
+		Twist gravity{gravity_, Vector3d(0.0, 0.0, 0.0)};
 
 		// From root to tip
 		int iter_joint = 0;

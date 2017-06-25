@@ -1,3 +1,8 @@
+#define EIGEN_NO_MALLOC
+// according to Eigen documentation this macro should not be used in "real-world code"
+// however we really dont want any calls to malloc because we are concerned about real-time issues
+// results in assertion failure when malloc is called by Eigen.
+
 #include "../include/kinematics.hpp"
 #include "../include/dynamics.hpp"
 
