@@ -13,19 +13,27 @@
 #include <vector>
 #include <chrono>
 #include <algorithm>
+#include <random>
 
 using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
 constexpr int nr_runs = 1e5;
+constexpr auto pi = 3.141592653589793238462643383279502884L;
 
 // helper functions
 #define now() high_resolution_clock::now()
 
-double my_rand(){
-    int r = std::rand() % 314;
-    return ((double)r)/100.0 - 1.57;
+VectorXd rand_joint_vector(int size, double min, double max){
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_real_distribution<> distri(min, max);
+	VectorXd vec(size);
+	for(int i=0; i<size; ++i){
+		vec[i] = distri(gen);
+	}
+    return vec;
 }
 
 void print_timing_result(vector<double> timings){
@@ -56,18 +64,21 @@ void print_timing_result(vector<double> timings){
 int main () {
     std::srand(std::time(0));
 
-	Eigen::Vector3d axis_z, axis_y;
+	Vector3d axis_z, axis_y;
 
 	axis_y << 0.0, 1.0, 0.0;
 	axis_z << 0.0, 0.0, 1.0;
 	
 	Frame f = Frame();
-	
-	Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
-	Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
+
+	double q_min = -160.0/pi;
+	double q_max = 160.0/pi;
+
+	Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational, q_min, q_max);
+	Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational, q_min, q_max);
 	Joint joint_none = Joint(0, f, axis_z, JointType::None);
 
-	Eigen::Vector3d length;
+	Vector3d length;
 	length << 0.0, 0.0, 0.5;
 	Frame tip = Frame(length);
 
@@ -92,15 +103,15 @@ int main () {
  	
  	Kinematics kin = Kinematics(chain);
  	Dynamics dyn = Dynamics(chain);
- 	Eigen::VectorXd q(chain.nr_joints);
- 	Eigen::VectorXd dq(chain.nr_joints);
- 	Eigen::VectorXd ddq(chain.nr_joints);
- 	Eigen::VectorXd q_init(chain.nr_joints);
+ 	VectorXd q(chain.nr_joints);
+ 	VectorXd dq(chain.nr_joints);
+ 	VectorXd ddq(chain.nr_joints);
+ 	VectorXd q_init(chain.nr_joints);
 
- 	q << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
- 	dq << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
- 	ddq << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
-    q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 	q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+ 	dq = rand_joint_vector(chain.nr_joints, q_min, q_max);
+ 	ddq = rand_joint_vector(chain.nr_joints, q_min, q_max);
+    q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
  	
  	auto tic = now();
  	kin.joint_to_cartesian(q);
@@ -115,7 +126,7 @@ int main () {
  		 << "Forward kinematics" 			 << endl
  		 << "==============================" << endl;
  	for(int i=0; i<nr_runs; ++i){
- 		q << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 		q = rand_joint_vector(chain.nr_joints, q_min, q_max);
 
  		tic = now();
 	 	kin.joint_to_cartesian(q);
@@ -137,8 +148,8 @@ int main () {
  	error_codes.reserve(nr_runs);
  	int error_code = 0;
  	for(int i=0; i<nr_runs; ++i){
- 		q << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
- 		q_init << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 		q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+ 		q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
  		kin.joint_to_cartesian(q);
  		Frame f_target = kin.f_end;
  		tic = now();
@@ -162,9 +173,9 @@ int main () {
  	timings.clear();
  	timings.reserve(nr_runs);
  	for(int i=0; i<nr_runs; ++i){
- 		q << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
-	 	dq << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
-	 	ddq << my_rand(), my_rand(), my_rand(), my_rand(), my_rand(), my_rand();
+ 		q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+	 	dq = rand_joint_vector(chain.nr_joints, q_min, q_max);
+	 	ddq = rand_joint_vector(chain.nr_joints, q_min, q_max);
  		tic = now();
 	 	dyn.calculate_torques(q, dq, ddq);
 	 	toc = now();

@@ -58,6 +58,8 @@ namespace robo{
     	int error;
 
 		VectorXd q; // Joint positions
+		VectorXd q_min;
+		VectorXd q_max;
 		VectorXd delta_q;
 		VectorXd weights_damping;
 		VectorXd bias;

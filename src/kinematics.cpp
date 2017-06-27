@@ -26,6 +26,14 @@ namespace robo{
 		
 		weights_IK << 1, 1, 1, 0.1, 0.1, 0.1;
 
+		int iter_joint = 0;
+		for(auto link: chain.links){
+			if(link.has_joint()){
+				q_min[iter_joint] = link.joint.parameters.q_min;
+				q_max[iter_joint] = link.joint.parameters.q_max;
+				++iter_joint;
+			}
+		}
 	}
 	
 	// Member functions
@@ -72,6 +80,16 @@ namespace robo{
 			b = residual;
 			delta_q = A.colPivHouseholderQr().solve(b);
 			q += jacobian.transpose() * delta_q;
+			// check joint limits
+			for(int i=0; i<nr_joints; ++i){
+				if(q[i] < q_min[i]){ 
+					q[i] = q_min[i];
+				} 
+				if(q[i] > q_max[i]){ 
+					q[i] = q_max[i];
+				}
+			}
+
 		}
 		q_out = q;
 		error_norm_IK = residual_norm;

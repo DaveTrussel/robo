@@ -19,14 +19,21 @@ namespace robo {
 		Vector3d axis;
 		Frame frame;
 		struct {
-			double rotor_inertia = 0.0;
-			double linear_friction_coeff = 0.0;
+			double rotor_inertia 			= 0.0;
+			double linear_friction_coeff 	= 0.0;
+			double q_min 					= std::numeric_limits<double>::min();
+			double q_max 					= std::numeric_limits<double>::max();
 		} parameters;
 
 		// Constructors
 		Joint(const int id_in, const Frame frame_in, const Vector3d axis_in, 
-			  const JointType type_in=JointType::Rotational):
-			id(id_in), type(type_in), axis(axis_in), frame(frame_in){};
+			  const JointType type_in=JointType::Rotational,
+			  double q_min_in=std::numeric_limits<double>::min(),
+			  double q_max_in= std::numeric_limits<double>::max()):
+			id(id_in), type(type_in), axis(axis_in), frame(frame_in){
+				parameters.q_min = q_min_in;
+				parameters.q_max = q_max_in;
+			};
 
 		// Member functions
 		Frame pose(const double& q)const{
@@ -51,6 +58,11 @@ namespace robo {
 				speed_lin << dq*axis;
 			}
 			return Twist(speed_lin, speed_rot);
+		};
+
+		void set_joint_limits(const double& q_min, const double& q_max){
+			parameters.q_min = q_min;
+			parameters.q_max = q_max;
 		};
 
 	private:

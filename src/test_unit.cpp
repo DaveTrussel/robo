@@ -26,7 +26,7 @@ SCENARIO("Joint tests"){
         SECTION("Joint creation"){
         	Joint joint_trans = Joint(0, f, axis_z, JointType::Translational);
         	Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
-			Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
+			Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational, -170.0/pi, 170.0/pi);
 			Joint joint_none = Joint(0, f, axis_z, JointType::None);
 
 			REQUIRE(joint_trans.pose(0.0).origin == Eigen::Vector3d::Zero());
