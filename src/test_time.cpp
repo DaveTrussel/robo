@@ -13,6 +13,7 @@
 #include <vector>
 #include <chrono>
 #include <algorithm>
+#include <sys/mman.h>
 
 using namespace robo;
 using namespace std;
@@ -109,6 +110,13 @@ int main () {
 
     vector<double> timings;
     timings.reserve(nr_runs);
+
+    if(mlockall(MCL_CURRENT)){
+        cout << "Successfully locked current memory pages into RAM before start of tests." << endl << endl;
+    }
+    else{
+        cout << "Locking memory pages failed." << endl << endl;
+    }
 
     // Time Forward Kinematics
     cout << "==============================" << endl 
