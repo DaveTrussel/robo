@@ -140,7 +140,8 @@ namespace robo{
                     Joint& joint = chain.links[iter_link].joint;
                     Pih = deltas_to_end_effector[iter_joint];
                     Pid = f_in.origin - joint_roots[iter_joint].origin;
-                    Vector3d axis = joint_roots[iter_joint].orientation.inverse() * joint.axis;
+                    Matrix3d linkframe_to_world = joint_roots[iter_joint].orientation.inverse();
+                    Vector3d axis = linkframe_to_world * joint.axis;
                     //std::cout << "Pih: " << Pih.transpose() << std::endl;
                     //std::cout << "Pid: " << Pid.transpose() << std::endl;
                     // calculate joint increments depending on joint type
@@ -177,7 +178,7 @@ namespace robo{
 
                         // handle periodicity (+-2*pi)
                         q[iter_joint] += theta;
-                        Matrix3d rot = joint.pose(theta).orientation;
+                        Matrix3d rot = linkframe_to_world * joint.pose(theta).orientation;
                         Pih = rot * Pih;
                         hh = rot * hh;
                         std::cout << "Theta = " << std::fixed << std::setw( 8 ) <<
