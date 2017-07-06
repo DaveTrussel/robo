@@ -55,6 +55,12 @@ namespace robo{
     }
 
     int Kinematics::cartesian_to_joint(const Frame& f_in, const VectorXd& q_init){
+        int error_code_ccd = cartesian_to_joint_ccd(f_in, q_init);
+        int error_code_levenverg = cartesian_to_joint_levenberg(f_in, q_out);
+        return 0;
+    }
+
+    int Kinematics::cartesian_to_joint_levenberg(const Frame& f_in, const VectorXd& q_init){
         // modified version of
         //https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf
         Vector6d residual = Vector6d::Zero();
@@ -95,6 +101,33 @@ namespace robo{
         q_out = q;
         error_norm_IK = residual_norm;
         return (error = E_MAX_ITERATIONS);
+    }
+
+    int Kinematics::cartesian_to_joint_ccd(const Frame& f_in, const VectorXd& q_init){
+        // i = iter_joint
+        // Pih (vec from current frame i to end effector)
+        // Pi (pos of frame i)
+        // Pid (vec from current frame i to desired end effector)
+        
+        // calculate forward kinematics
+        // Calculate Pih = P_end - Pi (vector from each joint to current end eff.)
+        // Set Ph = P_endeff_current
+        // Compute current error
+        // Check switch criterion (change to levenberg?)
+
+        // cycle through joints (top to bottom)
+        // if rotational
+        //      compute theta:
+        //      calculate weights wp, w0
+        //      calculate k1, k2, k3
+        //      calculate theta = atan(-k3/(k1-k2))
+        //      check +- pi solutions (+-2pi as well?)
+        //      check if (k1 - k2)cos(theat) - k3*sin(theta) < 0 --> max
+        // if translational
+        //      compute lambda = delta_pos.dot(axis)
+        //      check boundary constraints
+        // else nothing
+        return 0;
     }
 
     void Kinematics::calculate_jacobian(const VectorXd& q){

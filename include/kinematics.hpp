@@ -40,7 +40,21 @@ namespace robo{
 
         int cartesian_to_joint(const Frame& f_in, const VectorXd& q_init);
         /**
+        * Calculates the inverse kinematics (using a combined algorithm)
+        * The result is stored in q_out
+        * Check the return value to see if the solver was sucessfull (==1)
+        */
+
+        int cartesian_to_joint_levenberg(const Frame& f_in, const VectorXd& q_init);
+        /**
         * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
+        * The result is stored in q_out
+        * Check the return value to see if the solver was sucessfull (==1)
+        */
+
+        int cartesian_to_joint_ccd(const Frame& f_in, const VectorXd& q_init);
+        /**
+        * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
         * The result is stored in q_out
         * Check the return value to see if the solver was sucessfull (==1)
         */
