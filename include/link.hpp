@@ -19,7 +19,7 @@ namespace robo{
 
         // Member functions
         Frame pose(const double& q)const{
-        return joint.pose(q)*tip;
+            return joint.pose(q)*tip;
         };
         
         Twist twist(const double& q, const double &dq)const{

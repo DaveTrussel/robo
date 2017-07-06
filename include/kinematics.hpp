@@ -64,6 +64,13 @@ namespace robo{
         * Calculates the jacobian (calculate forward position before)
         * The result is stored in jacobian
         */
+
+        inline void enforce_joint_limits(VectorXd& qq){
+            for(int i=0; i<nr_joints; ++i){
+                if(qq[i] < q_min[i]){qq[i] = q_min[i];} 
+                if(qq[i] > q_max[i]){qq[i] = q_max[i];}
+            }
+        };
         
     private:
         // Members

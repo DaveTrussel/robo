@@ -20,7 +20,7 @@ using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
-constexpr int nr_runs = 1e5;
+constexpr int nr_runs = 1e4;
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
 // helper functions
@@ -71,8 +71,8 @@ int main () {
     
     Frame f = Frame();
 
-    double q_min = -160.0/pi;
-    double q_max = 160.0/pi;
+    double q_min = -170.0/pi;
+    double q_max = 170.0/pi;
 
     Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational, q_min, q_max);
     Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational, q_min, q_max);

@@ -1,6 +1,8 @@
 #include "../include/kinematics.hpp"
 #include <Eigen/Dense>
 #include <iostream>
+#include <iomanip>
+#include <cmath>
 
 namespace robo{
 
@@ -57,7 +59,7 @@ namespace robo{
     int Kinematics::cartesian_to_joint(const Frame& f_in, const VectorXd& q_init){
         int error_code_ccd = cartesian_to_joint_ccd(f_in, q_init);
         int error_code_levenverg = cartesian_to_joint_levenberg(f_in, q_out);
-        return 0;
+        return error_code_levenverg;
     }
 
     int Kinematics::cartesian_to_joint_levenberg(const Frame& f_in, const VectorXd& q_init){
@@ -88,15 +90,7 @@ namespace robo{
             q += jacobian.transpose() * delta_q;
 
             // check joint limits
-            for(int i=0; i<nr_joints; ++i){
-                if(q[i] < q_min[i]){ 
-                    q[i] = q_min[i];
-                } 
-                if(q[i] > q_max[i]){ 
-                    q[i] = q_max[i];
-                }
-            }
-
+            enforce_joint_limits(q);
         }
         q_out = q;
         error_norm_IK = residual_norm;
@@ -104,6 +98,107 @@ namespace robo{
     }
 
     int Kinematics::cartesian_to_joint_ccd(const Frame& f_in, const VectorXd& q_init){
+        /*
+        * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
+        * Mechanical Manipulators" by Wang & Chen 1991
+        */
+        std::cout << "Target:" << f_in.origin.transpose() << std::endl; 
+        q = q_init;
+        std::vector<Vector3d> deltas_to_end_effector; // TODO make this more efficient
+        deltas_to_end_effector.reserve(nr_joints);
+        std::vector<Vector3d> deltas_to_target; // TODO make this more efficient
+        deltas_to_target.reserve(nr_joints);
+        Vector6d residual = Vector6d::Zero();
+        double residual_norm = std::numeric_limits<double>::max();
+        Vector3d Pih; // TODO rename
+        Vector3d Pid;
+
+        for(int iter=0; iter<max_iter/10; iter++){
+            std::cout << "\n\n============= NEXT ==============" << std::endl;
+            joint_to_cartesian(q);
+            std::cout << "Endeff. at: " << f_end.origin.transpose() << std::endl;
+            residual = f_end - f_in;
+            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            std::cout << "Residual = " << residual_norm << " at step: " << iter << std::endl;
+            Matrix3d hh = f_end.orientation;
+            Matrix3d dd = f_in.orientation;
+
+            // calculate vectors to end effector for each joint
+            int iter_joint = nr_joints-1;
+            for(int iter_link=nr_links-1; iter_link>=0; --iter_link){
+                if(chain.links[iter_link].has_joint()){
+                    deltas_to_end_effector[iter_joint] = f_end.origin - joint_roots[iter_joint].origin;
+                    std::cout << deltas_to_end_effector[iter_joint].transpose() << std::endl; 
+                    --iter_joint;
+                }
+            }
+
+            // sweep from last joint to first and calculate joint increments
+            iter_joint = nr_joints-1;
+            for(int iter_link=nr_links-1; iter_link>=0; --iter_link){
+                if(chain.links[iter_link].has_joint()){
+                    Joint& joint = chain.links[iter_link].joint;
+                    Pih = deltas_to_end_effector[iter_joint];
+                    Pid = f_in.origin - joint_roots[iter_joint].origin;
+                    //std::cout << "Pih: " << Pih.transpose() << std::endl;
+                    //std::cout << "Pid: " << Pid.transpose() << std::endl;
+                    // calculate joint increments depending on joint type
+                    if(joint.type == JointType::Rotational){
+                        // calculate weights
+                        double pid_norm = Pid.norm();
+                        double pih_norm = Pih.norm();
+                        double rho = std::min(pid_norm, pih_norm)/std::max(pid_norm, pih_norm);
+                        double wp = 1 * (1.0 + rho);
+                        double k1 = wp * joint.axis.dot(Pid) * joint.axis.dot(Pih);
+                        double k2 = wp * Pid.dot(Pih);
+                        Vector3d k3_tmp = wp * Pih.cross(Pid);
+                        for(int i=0; i<3; ++i){
+                            k1      += joint.axis.dot(dd.col(i)) * joint.axis.dot(hh.col(i));
+                            k2      += dd.col(i).dot(hh.col(i));
+                            k3_tmp  += hh.col(i).cross(dd.col(i));
+                        }
+                        double k3 = joint.axis.dot(k3_tmp);
+                        double theta = std::atan2(-k3, (k1-k2));
+                        //double theta = std::atan(-k3/(k1-k2));
+                        double second_derivative = (k1-k2) * std::cos(theta) - k3 * std::sin(theta);
+                        if(second_derivative > 0){
+                            std::cout << "=========== ALARM ALARM ALARM!!!!! ============" << std::endl <<
+                            "2nd DERIVATIVE IS POSITIVE: " << second_derivative << std::endl;
+                            std::cout << "(k1-k2) = " << (k1-k2) << "\t cos(t)= " << std::cos(theta) << std::endl;
+                            std::cout << " k3     = " << k3      << "\t sin(t)= " << std::sin(theta) << std::endl;
+                            theta += M_PI;
+                            std::cout << "New 2nd derivative = " << (k1-k2) * std::cos(theta) - k3 * std::sin(theta) << std::endl;
+                        }
+
+                        // limit iteration step
+                        if(theta >  0.2){theta =  0.2;}
+                        if(theta < -0.2){theta = -0.2;}
+
+                        // handle periodicity (+-2*pi)
+                        q[iter_joint] += theta;
+                        Matrix3d rot = joint.pose(theta).orientation;
+                        Pih = rot * Pih;
+                        hh = rot * hh;
+                        std::cout << "Theta = " << std::fixed << std::setw( 8 ) <<
+                         std::setprecision( 2 ) <<theta * 180.0/M_PI << "\tq[" << iter_joint <<
+                         "] = " << q[iter_joint]*180.0/M_PI <<  std::endl;
+                    }
+                    if(joint.type == JointType::Translational){
+                        Vector3d delta_pos = Pid - Pih;
+                        double lambda = joint.axis.dot(delta_pos);
+                        q[iter_joint] += lambda;
+                        Pih = Pih + lambda*joint.axis;
+                    }
+                    // update variables of the next lower joint
+                    if(iter_joint > 0){
+                        Vector3d P_star = joint_roots[iter_joint].origin - joint_roots[iter_joint-1].origin;
+                        deltas_to_end_effector[iter_joint-1] = Pih + P_star;
+                    }
+                    --iter_joint;
+                } // end if has joint
+            }
+        }
+
         // i = iter_joint
         // Pih (vec from current frame i to end effector)
         // Pi (pos of frame i)
@@ -120,7 +215,7 @@ namespace robo{
         //      compute theta:
         //      calculate weights wp, w0
         //      calculate k1, k2, k3
-        //      calculate theta = atan(-k3/(k1-k2))
+        //      calculate tan(theta)= -k3/(k1-k2)
         //      check +- pi solutions (+-2pi as well?)
         //      check if (k1 - k2)cos(theat) - k3*sin(theta) < 0 --> max
         // if translational
