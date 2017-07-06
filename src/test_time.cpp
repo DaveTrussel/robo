@@ -14,6 +14,7 @@
 #include <chrono>
 #include <algorithm>
 #include <random>
+#include <sys/mman.h>
 
 using namespace robo;
 using namespace std;
@@ -65,7 +66,6 @@ int main () {
     std::srand(std::time(0));
 
     Vector3d axis_z, axis_y;
-
     axis_y << 0.0, 1.0, 0.0;
     axis_z << 0.0, 0.0, 1.0;
     
@@ -79,6 +79,7 @@ int main () {
     Joint joint_none = Joint(0, f, axis_z, JointType::None);
 
     Vector3d length;
+
     length << 0.0, 0.0, 0.5;
     Frame tip = Frame(length);
 
@@ -103,6 +104,7 @@ int main () {
     
     Kinematics kin = Kinematics(chain);
     Dynamics dyn = Dynamics(chain);
+
     VectorXd q(chain.nr_joints);
     VectorXd dq(chain.nr_joints);
     VectorXd ddq(chain.nr_joints);
@@ -121,13 +123,20 @@ int main () {
     vector<double> timings;
     timings.reserve(nr_runs);
 
+    if(mlockall(MCL_CURRENT)){
+        cout << "Successfully locked current memory pages into RAM before start of tests." 
+        << endl << "(Future memory pages not locked)" << endl << endl;
+    }
+    else{
+        cout << "Locking memory pages failed." << endl << endl;
+    }
+
     // Time Forward Kinematics
     cout << "==============================" << endl 
          << "Forward kinematics"             << endl
          << "==============================" << endl;
     for(int i=0; i<nr_runs; ++i){
         q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-
         tic = now();
         kin.joint_to_cartesian(q);
         toc = now();
@@ -168,7 +177,7 @@ int main () {
 
     // Time Inverse Dynamics
     cout << "==============================" << endl 
-         << "Inverse dynamics"           << endl
+         << "Inverse dynamics"               << endl
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
@@ -184,4 +193,4 @@ int main () {
     }
     print_timing_result(timings);
     cout << endl;
-} 
+}

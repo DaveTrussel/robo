@@ -80,6 +80,7 @@ namespace robo{
             b = residual;
             delta_q = A.colPivHouseholderQr().solve(b);
             q += jacobian.transpose() * delta_q;
+
             // check joint limits
             for(int i=0; i<nr_joints; ++i){
                 if(q[i] < q_min[i]){ 
@@ -109,4 +110,5 @@ namespace robo{
             }
         }
     }
-}   
+
+}

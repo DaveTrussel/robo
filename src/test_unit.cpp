@@ -175,6 +175,6 @@ SCENARIO("Dynamics tests"){
                 REQUIRE(res == Eigen::VectorXd::Zero(chain.nr_joints));
             }
         }
-    }   
+    }
 }
 
