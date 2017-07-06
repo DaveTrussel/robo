@@ -140,6 +140,7 @@ namespace robo{
                     Joint& joint = chain.links[iter_link].joint;
                     Pih = deltas_to_end_effector[iter_joint];
                     Pid = f_in.origin - joint_roots[iter_joint].origin;
+                    Vector3d axis = joint_roots[iter_joint].orientation.inverse() * joint.axis;
                     //std::cout << "Pih: " << Pih.transpose() << std::endl;
                     //std::cout << "Pid: " << Pid.transpose() << std::endl;
                     // calculate joint increments depending on joint type
@@ -149,15 +150,15 @@ namespace robo{
                         double pih_norm = Pih.norm();
                         double rho = std::min(pid_norm, pih_norm)/std::max(pid_norm, pih_norm);
                         double wp = 1 * (1.0 + rho);
-                        double k1 = wp * joint.axis.dot(Pid) * joint.axis.dot(Pih);
+                        double k1 = wp * axis.dot(Pid) * axis.dot(Pih);
                         double k2 = wp * Pid.dot(Pih);
                         Vector3d k3_tmp = wp * Pih.cross(Pid);
                         for(int i=0; i<3; ++i){
-                            k1      += joint.axis.dot(dd.col(i)) * joint.axis.dot(hh.col(i));
+                            k1      += axis.dot(dd.col(i)) * axis.dot(hh.col(i));
                             k2      += dd.col(i).dot(hh.col(i));
                             k3_tmp  += hh.col(i).cross(dd.col(i));
                         }
-                        double k3 = joint.axis.dot(k3_tmp);
+                        double k3 = axis.dot(k3_tmp);
                         double theta = std::atan2(-k3, (k1-k2));
                         //double theta = std::atan(-k3/(k1-k2));
                         double second_derivative = (k1-k2) * std::cos(theta) - k3 * std::sin(theta);
@@ -185,9 +186,9 @@ namespace robo{
                     }
                     if(joint.type == JointType::Translational){
                         Vector3d delta_pos = Pid - Pih;
-                        double lambda = joint.axis.dot(delta_pos);
+                        double lambda = axis.dot(delta_pos);
                         q[iter_joint] += lambda;
-                        Pih = Pih + lambda*joint.axis;
+                        Pih = Pih + lambda*axis;
                     }
                     // update variables of the next lower joint
                     if(iter_joint > 0){
