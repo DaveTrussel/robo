@@ -117,12 +117,13 @@ namespace robo{
             std::cout << "\n\n============= NEXT ==============" << std::endl;
             joint_to_cartesian(q);
             std::cout << "Endeff. at: " << f_end.origin.transpose() << std::endl;
-            residual = f_end - f_in;
+            residual = f_in - f_end;
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             std::cout << "Residual = " << residual_norm << " at step: " << iter << std::endl;
             Matrix3d hh = f_end.orientation;
             Matrix3d dd = f_in.orientation;
 
+/*
             // calculate vectors to end effector for each joint
             int iter_joint = nr_joints-1;
             for(int iter_link=nr_links-1; iter_link>=0; --iter_link){
@@ -132,18 +133,22 @@ namespace robo{
                     --iter_joint;
                 }
             }
+*/
 
             // sweep from last joint to first and calculate joint increments
-            iter_joint = nr_joints-1;
+            int iter_joint = nr_joints-1;
             for(int iter_link=nr_links-1; iter_link>=0; --iter_link){
                 if(chain.links[iter_link].has_joint()){
+                    joint_to_cartesian(q);
+                    Matrix3d hh = f_end.orientation;
+                    Matrix3d dd = f_in.orientation;
                     Joint& joint = chain.links[iter_link].joint;
-                    Pih = deltas_to_end_effector[iter_joint];
+                    Pih = f_end.origin - joint_roots[iter_joint].origin;;
                     Pid = f_in.origin - joint_roots[iter_joint].origin;
                     Matrix3d linkframe_to_world = joint_roots[iter_joint].orientation.inverse();
                     Vector3d axis = linkframe_to_world * joint.axis;
-                    //std::cout << "Pih: " << Pih.transpose() << std::endl;
-                    //std::cout << "Pid: " << Pid.transpose() << std::endl;
+                    std::cout << "Pih: " << Pih.transpose() << std::endl;
+                    std::cout << "Pid: " << Pid.transpose() << std::endl;
                     // calculate joint increments depending on joint type
                     if(joint.type == JointType::Rotational){
                         // calculate weights
@@ -173,14 +178,11 @@ namespace robo{
                         }
 
                         // limit iteration step
-                        if(theta >  0.2){theta =  0.2;}
-                        if(theta < -0.2){theta = -0.2;}
+                        //if(theta >  0.2){theta =  0.2;}
+                        //if(theta < -0.2){theta = -0.2;}
 
                         // handle periodicity (+-2*pi)
                         q[iter_joint] += theta;
-                        Matrix3d rot = linkframe_to_world * joint.pose(theta).orientation;
-                        Pih = rot * Pih;
-                        hh = rot * hh;
                         std::cout << "Theta = " << std::fixed << std::setw( 8 ) <<
                          std::setprecision( 2 ) <<theta * 180.0/M_PI << "\tq[" << iter_joint <<
                          "] = " << q[iter_joint]*180.0/M_PI <<  std::endl;
@@ -189,12 +191,6 @@ namespace robo{
                         Vector3d delta_pos = Pid - Pih;
                         double lambda = axis.dot(delta_pos);
                         q[iter_joint] += lambda;
-                        Pih = Pih + lambda*axis;
-                    }
-                    // update variables of the next lower joint
-                    if(iter_joint > 0){
-                        Vector3d P_star = joint_roots[iter_joint].origin - joint_roots[iter_joint-1].origin;
-                        deltas_to_end_effector[iter_joint-1] = Pih + P_star;
                     }
                     --iter_joint;
                 } // end if has joint
