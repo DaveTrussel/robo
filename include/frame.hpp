@@ -75,6 +75,12 @@ namespace robo {
         Vector6d delta_frame;
         delta_frame.block<3,1>(0,0) << left.origin - right.origin;
         Matrix3d rotinvrot;
+        // TODO rotation from right to left frame v_l = R_lr * v_r
+        // R_lo = left
+        // R_ro = right
+        // R_rl = R_ro' * R_lo
+        // angle, axis = R_rl
+        // rotinvrot << right.orientation.transpose() * left.orientation;
         rotinvrot << left.orientation.inverse() * right.orientation; 
         Eigen::AngleAxisd angle_axis(rotinvrot);
         delta_frame.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); 
