@@ -10,6 +10,7 @@ namespace robo{
     int Dynamics::calculate_torques(const VectorXd& q_, const VectorXd& dq_, const VectorXd& ddq_,
                                     const std::vector<Wrench>& wrenches_extern,
                                     const Vector3d& gravity_){
+        // Recursive newton euler algorithm
         double q, dq, ddq;
         Twist link_twist;
         Matrix3d to_link_rot;
@@ -38,7 +39,7 @@ namespace robo{
             link_twist = rotate_twist(to_link_rot, chain.links[iter_link].twist(q, dq));
             unit_twists[iter_link] = rotate_twist(to_link_rot, chain.links[iter_link].twist(q, 1.0));
 
-            // calculate velocity anc acceleration in current link frame
+            // calculate velocity and acceleration in current link frame
             if(iter_link==0){
                 velocities[iter_link] = link_twist;
                 accelerations[iter_link] = rotate_twist(to_link_rot, gravity) +

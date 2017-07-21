@@ -89,10 +89,10 @@ axis_z << 0.0, 0.0, 1.0;
 // Creates a standard frame origin at 0 and standard x,y,z axes
 Frame f = Frame();
 
-// Create joint types (JointType::Translational would also be possible)
-Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational);
-Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational);
-Joint joint_none = Joint(0, f, axis_z, JointType::None);
+// Create joint types (Joint_type::Translational would also be possible)
+Joint joint_ellbow = Joint(0, f, axis_y, Joint_type::Rotational);
+Joint joint_wrist = Joint(0, f, axis_z, Joint_type::Rotational);
+Joint joint_none = Joint(0, f, axis_z, Joint_type::None);
 
 // Simplified case with all same link lengths
 Vector3d length;
@@ -112,13 +112,13 @@ Link link_6 = Link(6, joint_wrist, tip, inertia);
 
 // Create a chain out of links
 Chain chain;
-chain.addLink(link_0);
-chain.addLink(link_1);
-chain.addLink(link_2);
-chain.addLink(link_3);
-chain.addLink(link_4);
-chain.addLink(link_5);
-chain.addLink(link_6);
+chain.add_link(link_0);
+chain.add_link(link_1);
+chain.add_link(link_2);
+chain.add_link(link_3);
+chain.add_link(link_4);
+chain.add_link(link_5);
+chain.add_link(link_6);
 	
 Kinematics kin = Kinematics(chain);
 Dynamics dyn = Dynamics(chain);

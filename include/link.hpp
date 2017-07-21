@@ -28,7 +28,7 @@ namespace robo{
         };
         
         bool has_joint()const{
-            return joint.type != JointType::None;
+            return joint.type != Joint_type::None;
         };
     };
 

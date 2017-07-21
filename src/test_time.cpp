@@ -3,8 +3,8 @@
 // however we really dont want any calls to malloc because we are concerned about real-time issues
 // results in assertion failure when malloc is called by Eigen.
 
-#include "../include/kinematics.hpp"
-#include "../include/dynamics.hpp"
+#include "kinematics.hpp"
+#include "dynamics.hpp"
 
 #include <Eigen/Dense>
 
@@ -21,6 +21,7 @@ using namespace std;
 using namespace std::chrono;
 
 constexpr int nr_runs = 1e4;
+constexpr int nr_iter = 500;
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
 // helper functions
@@ -71,12 +72,12 @@ int main () {
     
     Frame f = Frame();
 
-    double q_min = -170.0/pi;
-    double q_max = 170.0/pi;
+    double q_min = -170.0/180.0*pi;
+    double q_max = 170.0/180.0*pi;
 
-    Joint joint_ellbow = Joint(0, f, axis_y, JointType::Rotational, q_min, q_max);
-    Joint joint_wrist = Joint(0, f, axis_z, JointType::Rotational, q_min, q_max);
-    Joint joint_none = Joint(0, f, axis_z, JointType::None);
+    Joint joint_ellbow = Joint(0, f, axis_y, Joint_type::Rotational, q_min, q_max);
+    Joint joint_wrist =  Joint(0, f, axis_z, Joint_type::Rotational, q_min, q_max);
+    Joint joint_none =   Joint(0, f, axis_z, Joint_type::None);
 
     Vector3d length;
 
@@ -94,15 +95,15 @@ int main () {
     Link link_6 = Link(6, joint_wrist, tip, inertia);
     
     Chain chain;
-    chain.addLink(link_0);
-    chain.addLink(link_1);
-    chain.addLink(link_2);
-    chain.addLink(link_3);
-    chain.addLink(link_4);
-    chain.addLink(link_5);
-    chain.addLink(link_6);
+    chain.add_link(link_0);
+    chain.add_link(link_1);
+    chain.add_link(link_2);
+    chain.add_link(link_3);
+    chain.add_link(link_4);
+    chain.add_link(link_5);
+    chain.add_link(link_6);
     
-    Kinematics kin = Kinematics(chain);
+    Kinematics kin = Kinematics(chain, nr_iter);
     Dynamics dyn = Dynamics(chain);
 
     VectorXd q(chain.nr_joints);
@@ -110,9 +111,9 @@ int main () {
     VectorXd ddq(chain.nr_joints);
     VectorXd q_init(chain.nr_joints);
 
-    q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    dq = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    ddq = rand_joint_vector(chain.nr_joints, q_min, q_max);
+    q      = rand_joint_vector(chain.nr_joints, q_min, q_max);
+    dq     = rand_joint_vector(chain.nr_joints, q_min, q_max);
+    ddq    = rand_joint_vector(chain.nr_joints, q_min, q_max);
     q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
     
     auto tic = now();
@@ -125,11 +126,12 @@ int main () {
 
     if(mlockall(MCL_CURRENT)){
         cout << "Successfully locked current memory pages into RAM before start of tests." 
-        << endl << "(Future memory pages not locked)" << endl << endl;
+        << endl << "(Future memory pages not locked)\n" << endl;
     }
     else{
-        cout << "Locking memory pages failed." << endl << endl;
+        cout << "Locking memory pages failed.\n" << endl;
     }
+
 
     // Time Forward Kinematics
     cout << "==============================" << endl 
@@ -146,10 +148,9 @@ int main () {
     print_timing_result(timings);
     cout << endl;
 
-
     // Time Inverse Kinematics
     cout << "==============================" << endl 
-         << "Inverse kinematics"             << endl
+         << "Inverse kinematics Combined"    << endl
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
@@ -170,6 +171,87 @@ int main () {
     }
     int nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
     double successrate = 100.0 * double(nr_no_error)/nr_runs;
+    cout << "Successrate: " << successrate << "%" << endl;
+    print_timing_result(timings);
+    cout << endl;
+
+    // Time Inverse Kinematics
+    cout << "==============================" << endl 
+         << "Inverse kinematics LM"          << endl
+         << "==============================" << endl;
+    timings.clear();
+    timings.reserve(nr_runs);
+    error_codes.clear();
+    error_codes.reserve(nr_runs);
+    error_code = 0;
+    for(int i=0; i<nr_runs; ++i){
+        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        kin.joint_to_cartesian(q);
+        Frame f_target = kin.f_end;
+        tic = now();
+        error_code = kin.cartesian_to_joint_levenberg(f_target, q_init);
+        toc = now();
+        duration = duration_cast<microseconds>( toc - tic ).count();
+        timings.push_back(duration);
+        error_codes.push_back(error_code);
+    }
+    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    successrate = 100.0 * double(nr_no_error)/nr_runs;
+    cout << "Successrate: " << successrate << "%" << endl;
+    print_timing_result(timings);
+    cout << endl;
+
+
+    // Time Inverse Kinematics
+    cout << "==============================" << endl 
+         << "Inverse kinematics Sugihara"    << endl
+         << "==============================" << endl;
+    timings.clear();
+    timings.reserve(nr_runs);
+    error_codes.clear();
+    error_codes.reserve(nr_runs);
+    error_code = 0;
+    for(int i=0; i<nr_runs; ++i){
+        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        kin.joint_to_cartesian(q);
+        Frame f_target = kin.f_end;
+        tic = now();
+        error_code = kin.cartesian_to_joint_sugihara(f_target, q_init);
+        toc = now();
+        duration = duration_cast<microseconds>( toc - tic ).count();
+        timings.push_back(duration);
+        error_codes.push_back(error_code);
+    }
+    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    successrate = 100.0 * double(nr_no_error)/nr_runs;
+    cout << "Successrate: " << successrate << "%" << endl;
+    print_timing_result(timings);
+    cout << endl;
+
+    cout << "==============================" << endl 
+         << "Inverse kinematics CCD"         << endl
+         << "==============================" << endl;
+    timings.clear();
+    timings.reserve(nr_runs);
+    error_codes.clear();
+    error_codes.reserve(nr_runs);
+    error_code = 0;
+    for(int i=0; i<nr_runs; ++i){
+        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
+        kin.joint_to_cartesian(q);
+        Frame f_target = kin.f_end;
+        tic = now();
+        error_code = kin.cartesian_to_joint_ccd(f_target, q_init, nr_iter);
+        toc = now();
+        duration = duration_cast<microseconds>( toc - tic ).count();
+        timings.push_back(duration);
+        error_codes.push_back(error_code);
+    }
+    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    successrate = 100.0 * double(nr_no_error)/nr_runs;
     cout << "Successrate: " << successrate << "%" << endl;
     print_timing_result(timings);
     cout << endl;

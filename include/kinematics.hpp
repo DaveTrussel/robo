@@ -38,23 +38,37 @@ namespace robo{
         * The result is stored in link_tips and f_end
         */
 
-        int cartesian_to_joint(const Frame& f_in, const VectorXd& q_init);
+        int cartesian_to_joint(const Frame& f_target, const VectorXd& q_init);
         /**
         * Calculates the inverse kinematics (using a combined algorithm)
         * The result is stored in q_out
         * Check the return value to see if the solver was sucessfull (==1)
         */
 
-        int cartesian_to_joint_levenberg(const Frame& f_in, const VectorXd& q_init);
+        int cartesian_to_joint_jacobian_transpose(const Frame& f_target, const VectorXd& q_init);
+        /**
+        * Calculates the inverse kinematics (using a jacobian transpose algorithm)
+        * The result is stored in q_out
+        * Check the return value to see if the solver was sucessfull (==1)
+        */
+
+        int cartesian_to_joint_levenberg(const Frame& f_target, const VectorXd& q_init);
         /**
         * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
         * The result is stored in q_out
         * Check the return value to see if the solver was sucessfull (==1)
         */
 
-        int cartesian_to_joint_ccd(const Frame& f_in, const VectorXd& q_init);
+        int cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd=100);
         /**
         * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
+        * The result is stored in q_out
+        * Check the return value to see if the solver was sucessfull (==1)
+        */
+
+        int cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init);
+        /**
+        * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
         * The result is stored in q_out
         * Check the return value to see if the solver was sucessfull (==1)
         */
@@ -67,8 +81,8 @@ namespace robo{
 
         inline void enforce_joint_limits(VectorXd& qq){
             for(int i=0; i<nr_joints; ++i){
-                if(qq[i] < q_min[i]){qq[i] = q_min[i];} 
-                if(qq[i] > q_max[i]){qq[i] = q_max[i];}
+                if(qq[i] < q_min[i]){ qq[i] = q_min[i]; } 
+                if(qq[i] > q_max[i]){ qq[i] = q_max[i]; }
             }
         };
         

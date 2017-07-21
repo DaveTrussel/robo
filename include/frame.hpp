@@ -6,17 +6,6 @@
 
 namespace robo {
 
-    // TODO think about best place to define those aliases (own alias header file?)
-    constexpr int max_size = 10;
-    using Vector3d  = Eigen::Vector3d;
-    using Vector6d  = Eigen::Matrix<double, 6, 1>;
-    using VectorXd  = Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_size, 1>; // set max size to avoid calls to malloc
-    using Matrix3d  = Eigen::Matrix3d;
-    using Matrix4d  = Eigen::Matrix4d;
-    using Matrix6d  = Eigen::Matrix<double, 6, 6>;
-    using Matrix6Xd = Eigen::Matrix<double, 6, Eigen::Dynamic, 0, 6, max_size>;
-    using MatrixXd  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, 0, max_size, max_size>;
-
     class Frame{
     public:
         // Members
@@ -71,11 +60,18 @@ namespace robo {
     inline Vector6d operator -(const Frame& left, const Frame& right){
         Vector6d delta_frame;
         delta_frame.block<3,1>(0,0) << left.origin - right.origin;
-        Matrix3d rotinvrot;
-        rotinvrot << left.orientation.inverse() * right.orientation; 
-        Eigen::AngleAxisd angle_axis(rotinvrot);
-        delta_frame.block<3,1>(3,0) << left.orientation * angle_axis.axis() * angle_axis.angle(); 
+        Matrix3d rot_inv_rot;
+        rot_inv_rot << left.orientation * right.orientation.transpose(); // transpose == inverse, for rotation matrices
+        //rot_inv_rot << right.orientation.transpose() * left.orientation; // transpose == inverse, for rotation matrices
+        Eigen::AngleAxisd angle_axis(rot_inv_rot);
+        delta_frame.block<3,1>(3,0) << angle_axis.axis() * angle_axis.angle();
+        //delta_frame.block<3,1>(3,0) << angle_axis.axis() * angle_axis.angle();
         return delta_frame;
     };
+
+    /*
+    Vector3d angle_axis_vector_from_rotation(const Matrix3d& rot){
+        return Vector3d(1,2,3);
+    };*/
 
 }

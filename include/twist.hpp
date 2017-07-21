@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include "typedef.hpp"
 #include <Eigen/Dense>
 
 namespace robo {
@@ -8,15 +10,15 @@ namespace robo {
     public:
 
         // Members
-        Eigen::Vector3d linear;
-        Eigen::Vector3d rotation;
+        Vector3d linear;
+        Vector3d rotation;
 
         // Constructors
-        explicit Twist(const Eigen::Vector3d& lin, const Eigen::Vector3d& rot): linear(lin), rotation(rot){};
+        explicit Twist(const Vector3d& lin, const Vector3d& rot): linear(lin), rotation(rot){};
         
-        explicit Twist(const Eigen::Vector3d& lin): linear(lin), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
+        explicit Twist(const Vector3d& lin): linear(lin), rotation(Vector3d(0.0, 0.0, 0.0)){};
         
-        Twist(): linear(Eigen::Vector3d(0.0, 0.0, 0.0)), rotation(Eigen::Vector3d(0.0, 0.0, 0.0)){};
+        Twist(): linear(Vector3d(0.0, 0.0, 0.0)), rotation(Vector3d(0.0, 0.0, 0.0)){};
 
         // Operators
         Twist& operator =(const Twist& other){
@@ -27,12 +29,12 @@ namespace robo {
     };
 
 
-    inline Twist rotate_twist(const Eigen::Matrix3d& rot, const Twist& twist){
+    inline Twist rotate_twist(const Matrix3d& rot, const Twist& twist){
         return Twist(rot * twist.linear, rot * twist.rotation);
     };
 
-    inline Twist change_twist_reference(const Twist& twist, const Eigen::Vector3d& delta_ref){
-        return Twist(twist.linear + delta_ref.cross(twist.rotation), twist.rotation);
+    inline Twist change_twist_reference(const Twist& twist, const Vector3d& delta_ref){
+        return Twist(twist.linear + twist.rotation.cross(delta_ref), twist.rotation);
     };
 
     inline Twist multiply_twists(const Twist& lhs, const Twist& rhs){
@@ -48,7 +50,7 @@ namespace robo {
                      lhs.rotation.cross(rhs.rotation));
     };
 
-    inline Twist operator *(const Eigen::Matrix3d& rot, const Twist& twist){
+    inline Twist operator *(const Matrix3d& rot, const Twist& twist){
         return Twist(rot * twist.linear, rot * twist.rotation);
     };
 
