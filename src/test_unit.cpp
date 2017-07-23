@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <iostream>
+#include <iomanip>
 
 
 constexpr auto pi = 3.141592653589793238462643383279502884L;
@@ -31,6 +32,7 @@ bool allclose(const Eigen::DenseBase<DerivedA>& a,
 // Test scenarios
 SCENARIO("Joint tests"){
     GIVEN("y and z axis and a frame"){
+        cout << std::fixed << std::setw( 12 ) << std::setprecision(2);
         Vector3d axis_z, axis_y;
         axis_y << 0.0, 1.0, 0.0;
         axis_z << 0.0, 0.0, 1.0;
@@ -289,12 +291,24 @@ SCENARIO("Dynamics tests"){
         VectorXd dq(chain.nr_joints);
         VectorXd ddq(chain.nr_joints);
 
-        WHEN("Inverse Dynamics: Home position"){
+        WHEN("Inverse Dynamics: Static Home position"){
             q = VectorXd::Zero(chain.nr_joints);
             dyn.calculate_torques(q);
             VectorXd res = dyn.joint_torques;
             THEN("No torques at home position"){
                 REQUIRE(res == VectorXd::Zero(chain.nr_joints));
+            }
+        }
+
+        WHEN("Inverse Dynamics: Static J5 at 90°"){
+            q << 0, 0, 0, 0, pi/2.0, 0;
+            dyn.calculate_torques(q);
+            VectorXd res = dyn.joint_torques;
+            std::cout << "RESULT: " << res.transpose();
+            THEN("Equal torques in J2, J3 and J5"){
+                VectorXd compare(chain.nr_joints);
+                compare << 0.0, 4.9, 4.9, 0.0, 4.9, 0.0;
+                REQUIRE(res == compare);
             }
         }
     }
