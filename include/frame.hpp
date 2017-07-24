@@ -35,6 +35,11 @@ namespace robo {
             return orientation.eulerAngles(0,1,2);
         };
 
+        Frame inverse()const{
+            Matrix3d reverse = orientation.transpose().eval();
+            return Frame(reverse*origin, reverse);
+        };
+
         // Operators
         Frame& operator =(const Frame& other){
             origin = other.origin;
@@ -50,6 +55,11 @@ namespace robo {
     inline Frame operator *(const Frame& left, const Frame& right){
             return Frame(left.orientation*right.origin+left.origin,
                          left.orientation*right.orientation);
+    };
+
+    inline Twist operator *(Frame frame, Twist twist){
+        return Twist(frame.orientation*twist.linear + frame.origin.cross(twist.rotation),
+                     frame.orientation*twist.rotation);
     };
 
     inline Wrench operator *(Frame frame, Wrench wrench){

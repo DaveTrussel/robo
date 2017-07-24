@@ -15,7 +15,7 @@ namespace robo{
         Inertia inertia;
 
         // Constructors
-        Link(int id_, const Joint& joint_, const Frame& tip_, const Inertia& inertia_): id(id_), joint(joint_), tip(tip_), inertia(inertia_){};
+        Link(int id_, const Joint& joint_, const Frame& tip_, const Inertia& inertia_): id(id_), joint(joint_), tip(joint_.pose(0).inverse()*tip_), inertia(inertia_){};
 
         // Member functions
         Frame pose(const double& q)const{

@@ -30,14 +30,20 @@ namespace robo {
             return *this;
         };
 
+        Wrench& operator +=(const Wrench& other){
+            force += other.force;
+            torque += other.torque;
+            return *this;
+        }
+
     };
 
     inline Wrench operator +(const Wrench& lhs, const Wrench& rhs){
-        return Wrench(lhs.force - rhs.force, lhs.torque - rhs.torque);
+        return Wrench(lhs.force + rhs.force, lhs.torque + rhs.torque);
     };
 
     inline Wrench operator -(const Wrench& lhs, const Wrench& rhs){
-        return Wrench(lhs.force + rhs.force, lhs.torque + rhs.torque);
+        return Wrench(lhs.force - rhs.force, lhs.torque - rhs.torque);
     };
 
     inline Wrench operator *(const double& val, const Wrench& wrench){
@@ -49,7 +55,8 @@ namespace robo {
     };
 
     inline Wrench operator *(const Twist& twist, const Wrench& wrench){
-        return Wrench(twist.rotation.cross(wrench.force), twist.rotation.cross(wrench.torque)+twist.linear.cross(wrench.force));
+        return Wrench(twist.rotation.cross(wrench.force),
+                      twist.rotation.cross(wrench.torque)+twist.linear.cross(wrench.force));
     };
 
 }
