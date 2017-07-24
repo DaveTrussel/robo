@@ -16,16 +16,16 @@ file(GLOB HEADERS_TEST "lib/catch.hpp")
 set(SRC_LIB src/kinematics.cpp src/dynamics.cpp)
 set(SRC_TEST_UNIT ${SRC_LIB} src/test_unit.cpp)
 set(SRC_TEST_TIME ${SRC_LIB} src/test_time.cpp)
-set(SRC_TEST_CCD ${SRC_LIB} src/test_ccd.cpp)
+set(SRC_TEST_KINEMATICS_SIMPLE ${SRC_LIB} src/test_kinematics_simple.cpp)
 
 
 add_executable(test_unit ${SRC_TEST_UNIT} ${HEADERS} ${HEADERS_TEST})
 add_executable(test_time ${SRC_TEST_TIME} ${HEADERS} ${HEADERS_TEST})
-add_executable(test_ccd ${SRC_TEST_CCD} ${HEADERS} ${HEADERS_TEST})
+add_executable(test_kinematics_simple ${SRC_TEST_KINEMATICS_SIMPLE} ${HEADERS} ${HEADERS_TEST})
 
 
-set_property(TARGET test_unit test_time PROPERTY CXX_STANDARD 14)
-set_property(TARGET test_unit test_time PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STANDARD 14)
+set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STANDARD_REQUIRED ON)
 # cmake>=3.1 not available on travis set std14 manually
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra" CACHE STRING "Compiler flags used by the Debug CMAKE_BUILD_TYPE." FORCE)

@@ -62,16 +62,9 @@ namespace robo {
         delta_frame.block<3,1>(0,0) << left.origin - right.origin;
         Matrix3d rot_inv_rot;
         rot_inv_rot << left.orientation * right.orientation.transpose(); // transpose == inverse, for rotation matrices
-        //rot_inv_rot << right.orientation.transpose() * left.orientation; // transpose == inverse, for rotation matrices
         Eigen::AngleAxisd angle_axis(rot_inv_rot);
         delta_frame.block<3,1>(3,0) << angle_axis.axis() * angle_axis.angle();
-        //delta_frame.block<3,1>(3,0) << angle_axis.axis() * angle_axis.angle();
         return delta_frame;
     };
-
-    /*
-    Vector3d angle_axis_vector_from_rotation(const Matrix3d& rot){
-        return Vector3d(1,2,3);
-    };*/
 
 }
