@@ -26,6 +26,9 @@ void run_inverse_kinematics(int method, VectorXd q_target, VectorXd q_init, Kine
         case 3: error = kin.cartesian_to_joint_sugihara(f_target, q_init);
                 std::cout << "=== Sugihara ==="                  << std::endl;
                 break;
+        case 4: error = kin.cartesian_to_joint_sugihara_joint_limits(f_target, q_init);
+                std::cout << "=== Sugihara Joint Limits ==="     << std::endl;
+                break;
     }
     std::cout << "Error code:               " << error                       << std::endl;
     std::cout << "Initial joint position:   " << q_init.transpose()          << std::endl;
@@ -118,7 +121,7 @@ int main () {
 
     cout << "dx=J*dq: " << (kin.jacobian * (q_target-q_init)).transpose() << "\n" << endl;   
 
-    for(int i=0; i<4; ++i){
+    for(int i=0; i<5; ++i){
         run_inverse_kinematics(i, q_target, q_init, kin);
         cout << endl;
     }

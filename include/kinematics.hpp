@@ -59,6 +59,13 @@ namespace robo{
         * Check the return value to see if the solver was sucessfull (==1)
         */
 
+        int cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init);
+        /**
+        * Calculates the inverse kinematics (using a damped least squares algorithm) with "soft" joint limits
+        * The result is stored in q_out
+        * Check the return value to see if the solver was sucessfull (==1)
+        */
+
         int cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd=100);
         /**
         * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
@@ -78,6 +85,16 @@ namespace robo{
         * Calculates the jacobian (calculate forward position before)
         * The result is stored in jacobian
         */
+
+        inline bool check_joint_limits(const VectorXd& q){
+            bool is_within_joint_limits = true;
+            for(int i=0; i<nr_joints; ++i){
+                if(q_min[i] > q[i] || q[i] > q_max[i]){
+                    is_within_joint_limits = false;
+                }
+            }
+            return is_within_joint_limits;
+        };
 
         inline void enforce_joint_limits(VectorXd& qq){
             for(int i=0; i<nr_joints; ++i){

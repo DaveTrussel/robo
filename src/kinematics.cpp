@@ -128,6 +128,49 @@ namespace robo{
         return (error = E_MAX_ITERATIONS);
     }
 
+    int Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
+        /*
+         * Variation of damped least squares (levenberg-marquardt)
+         * based on "Improved Damped Least Squares Solution with Joint Limits,
+         * Joint Weights and Comfortable Criteria for Controlling Human-like Figures" by Na et al.
+        */
+        Vector6d residual = Vector6d::Zero();
+        VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
+        double residual_norm = std::numeric_limits<double>::max();
+        double residual_norm_squared = std::numeric_limits<double>::max();
+        double param_lin = 1.0;
+        int param_exp = 32; // must be an even number!
+        double lambda_i = 0.0;
+        MatrixXd H(nr_joints, nr_joints);
+        VectorXd g(nr_joints);
+        q = q_init;
+        
+        for(int i=0; i<max_iter; ++i){
+            joint_to_cartesian(q);
+            calculate_jacobian(q);
+            residual = f_target - f_end;
+            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            if(residual_norm < eps){
+                q_out = q;
+                error_norm_IK = residual_norm;
+                return (error = E_NO_ERROR);
+            }
+            g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
+            H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
+            residual_norm_squared = residual_norm * residual_norm;
+            //factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
+            for(int j=0; j<nr_joints; ++j){
+                factor_damp[j] = param_lin * std::pow((2*q[j]-q_max[j]-q_min[j])/(q_max[j]-q_min[j]), param_exp) + residual_norm_squared + 1e-10;
+            }
+            H.diagonal() += factor_damp;
+            delta_q = H.colPivHouseholderQr().solve(g); 
+            q += delta_q;
+        }
+        q_out = q;
+        error_norm_IK = residual_norm;
+        return (error = E_MAX_ITERATIONS);
+    }
+
     int Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd){
         /*
         * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
