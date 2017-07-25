@@ -12,7 +12,7 @@ constexpr auto pi = 3.141592653589793238462643383279502884L;
 void run_inverse_kinematics(int method, VectorXd q_target, VectorXd q_init, Kinematics& kin){
     kin.joint_to_cartesian(q_target);
     Frame f_target = kin.f_end;
-    int error = 0;
+    Error_type error = Error_type::no_error;
     switch(method){
         case 0: error = kin.cartesian_to_joint_jacobian_transpose(f_target, q_init);
                 std::cout << "=== Jacobian transpose ==="       << std::endl;
@@ -30,11 +30,11 @@ void run_inverse_kinematics(int method, VectorXd q_target, VectorXd q_init, Kine
                 std::cout << "=== Sugihara Joint Limits ==="     << std::endl;
                 break;
     }
-    std::cout << "Error code:               " << error                       << std::endl;
-    std::cout << "Initial joint position:   " << q_init.transpose()          << std::endl;
-    std::cout << "Target joint position:    " << q_target.transpose()        << std::endl;
-    std::cout << "Found joint position:     " << kin.q_out.transpose()       << 
-                 " (Several valid solutions might exist)"                    << std::endl;
+    std::cout << "Error code:               " << (error == Error_type::no_error)    << std::endl;
+    std::cout << "Initial joint position:   " << q_init.transpose()                 << std::endl;
+    std::cout << "Target joint position:    " << q_target.transpose()               << std::endl;
+    std::cout << "Found joint position:     " << kin.q_out.transpose()              << 
+                 " (Several valid solutions might exist)"                           << std::endl;
     kin.joint_to_cartesian(kin.q_out);
     Frame f_found = kin.f_end;
     std::cout << "Target frame:           \n" << f_target.origin.transpose()  << "\n" << f_target.orientation << std::endl;

@@ -154,24 +154,32 @@ int main () {
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
-    vector<double> error_codes;
-    error_codes.reserve(nr_runs);
-    int error_code = 0;
+    vector<Error_type> error_types;
+    error_types.reserve(nr_runs);
+    Error_type error_type = Error_type::no_error;
+    vector<bool> joint_limit_compliances;
+    joint_limit_compliances.reserve(nr_runs);
+    bool joint_limit_compliance = false;
     for(int i=0; i<nr_runs; ++i){
         q = rand_joint_vector(chain.nr_joints, q_min, q_max);
         q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
         kin.joint_to_cartesian(q);
         Frame f_target = kin.f_end;
         tic = now();
-        error_code = kin.cartesian_to_joint(f_target, q_init);
+        error_type = kin.cartesian_to_joint(f_target, q_init);
         toc = now();
         duration = duration_cast<microseconds>( toc - tic ).count();
+        joint_limit_compliance = kin.check_joint_limits(kin.q_out);
         timings.push_back(duration);
-        error_codes.push_back(error_code);
+        error_types.push_back(error_type);
+        joint_limit_compliances.push_back(joint_limit_compliance);
     }
-    int nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    int nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
     double successrate = 100.0 * double(nr_no_error)/nr_runs;
     cout << "Successrate: " << successrate << "%" << endl;
+    int nr_in_JL = count(joint_limit_compliances.begin(), joint_limit_compliances.end(), true);
+    double rate_in_JL = 100.0 * double(nr_in_JL)/nr_runs;
+    cout << "Within joint limits: " << rate_in_JL << "%" << endl;
     print_timing_result(timings);
     cout << endl;
 
@@ -181,22 +189,22 @@ int main () {
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
-    error_codes.clear();
-    error_codes.reserve(nr_runs);
-    error_code = 0;
+    error_types.clear();
+    error_types.reserve(nr_runs);
+    error_type = Error_type::no_error;
     for(int i=0; i<nr_runs; ++i){
         q = rand_joint_vector(chain.nr_joints, q_min, q_max);
         q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
         kin.joint_to_cartesian(q);
         Frame f_target = kin.f_end;
         tic = now();
-        error_code = kin.cartesian_to_joint_levenberg(f_target, q_init);
+        error_type = kin.cartesian_to_joint_levenberg(f_target, q_init);
         toc = now();
         duration = duration_cast<microseconds>( toc - tic ).count();
         timings.push_back(duration);
-        error_codes.push_back(error_code);
+        error_types.push_back(error_type);
     }
-    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
     successrate = 100.0 * double(nr_no_error)/nr_runs;
     cout << "Successrate: " << successrate << "%" << endl;
     print_timing_result(timings);
@@ -209,22 +217,22 @@ int main () {
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
-    error_codes.clear();
-    error_codes.reserve(nr_runs);
-    error_code = 0;
+    error_types.clear();
+    error_types.reserve(nr_runs);
+    error_type = Error_type::no_error;
     for(int i=0; i<nr_runs; ++i){
         q = rand_joint_vector(chain.nr_joints, q_min, q_max);
         q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
         kin.joint_to_cartesian(q);
         Frame f_target = kin.f_end;
         tic = now();
-        error_code = kin.cartesian_to_joint_sugihara(f_target, q_init);
+        error_type = kin.cartesian_to_joint_sugihara(f_target, q_init);
         toc = now();
         duration = duration_cast<microseconds>( toc - tic ).count();
         timings.push_back(duration);
-        error_codes.push_back(error_code);
+        error_types.push_back(error_type);
     }
-    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
     successrate = 100.0 * double(nr_no_error)/nr_runs;
     cout << "Successrate: " << successrate << "%" << endl;
     print_timing_result(timings);
@@ -235,22 +243,22 @@ int main () {
          << "==============================" << endl;
     timings.clear();
     timings.reserve(nr_runs);
-    error_codes.clear();
-    error_codes.reserve(nr_runs);
-    error_code = 0;
+    error_types.clear();
+    error_types.reserve(nr_runs);
+    error_type = Error_type::no_error;
     for(int i=0; i<nr_runs; ++i){
         q = rand_joint_vector(chain.nr_joints, q_min, q_max);
         q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
         kin.joint_to_cartesian(q);
         Frame f_target = kin.f_end;
         tic = now();
-        error_code = kin.cartesian_to_joint_ccd(f_target, q_init, nr_iter);
+        error_type = kin.cartesian_to_joint_ccd(f_target, q_init, nr_iter);
         toc = now();
         duration = duration_cast<microseconds>( toc - tic ).count();
         timings.push_back(duration);
-        error_codes.push_back(error_code);
+        error_types.push_back(error_type);
     }
-    nr_no_error = count(error_codes.begin(), error_codes.end(), 1);
+    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
     successrate = 100.0 * double(nr_no_error)/nr_runs;
     cout << "Successrate: " << successrate << "%" << endl;
     print_timing_result(timings);

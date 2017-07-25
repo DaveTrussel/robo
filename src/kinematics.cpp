@@ -7,10 +7,10 @@
 namespace robo{
 
     // Constructors
-    Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_, double eps_joints_):
+    Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_):
     chain(chain_), nr_joints(chain.nr_joints), nr_links(chain.nr_links),
     joint_roots(nr_joints), joint_tips(nr_joints),
-    max_iter(max_iter_), eps(eps_), eps_joints(eps_joints_)
+    max_iter(max_iter_), eps(eps_)
     {   
         link_tips = std::vector<Frame>(nr_links);
 
@@ -21,7 +21,6 @@ namespace robo{
         q_min =             VectorXd::Zero(nr_joints);
         q_max =             VectorXd::Zero(nr_joints);
         q_out =             VectorXd::Zero(nr_joints);
-        weights_damping =   VectorXd::Zero(nr_joints);
         bias =              VectorXd::Constant(chain.nr_joints, 1e-16);
         jacobian =          MatrixXd::Zero(6, nr_joints);
         jacobian_weighted = MatrixXd::Zero(6, nr_joints);
@@ -58,14 +57,14 @@ namespace robo{
         }
     }
 
-    int Kinematics::cartesian_to_joint(const Frame& f_target, const VectorXd& q_init){
-        cartesian_to_joint_ccd(f_target, q_init, max_iter/10);
-        int error_code_sugihara = cartesian_to_joint_sugihara(f_target, q_out);
+    Error_type Kinematics::cartesian_to_joint(const Frame& f_target, const VectorXd& q_init){
+        //cartesian_to_joint_ccd(f_target, q_init, max_iter/10);
+        Error_type error_sugihara = cartesian_to_joint_sugihara(f_target, q_out);
         //int error_code_sugihara = cartesian_to_joint_sugihara(f_target, q_init);
-        return error_code_sugihara;
+        return error_sugihara;
     }
 
-    int Kinematics::cartesian_to_joint_jacobian_transpose(const Frame& f_target, const VectorXd& q_init){
+    Error_type Kinematics::cartesian_to_joint_jacobian_transpose(const Frame& f_target, const VectorXd& q_init){
         /*
         / Simple jacobian transpose method (not robust, but fast) will not handle singularities well
         */
@@ -82,7 +81,7 @@ namespace robo{
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
-                return (error = E_NO_ERROR);
+                return (error = Error_type::no_error);
             }
             tmp = jacobian * jacobian.transpose() * residual;
             alpha = residual.dot(tmp) / tmp.dot(tmp);
@@ -90,10 +89,10 @@ namespace robo{
         }
         q_out = q;
         error_norm_IK = residual_norm;
-        return (error = E_MAX_ITERATIONS);
+        return (error = Error_type::max_iterations);
     }
 
-    int Kinematics::cartesian_to_joint_levenberg(const Frame& f_target, const VectorXd& q_init){
+    Error_type Kinematics::cartesian_to_joint_levenberg(const Frame& f_target, const VectorXd& q_init){
         // modified version of
         // https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf
         Vector6d residual = Vector6d::Zero();
@@ -110,7 +109,7 @@ namespace robo{
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
-                return (error = E_NO_ERROR);
+                return (error = Error_type::no_error);
             }
             A = jacobian * jacobian.transpose();
             residual_norm_squared = residual_norm * residual_norm;
@@ -125,10 +124,10 @@ namespace robo{
         }
         q_out = q;
         error_norm_IK = residual_norm;
-        return (error = E_MAX_ITERATIONS);
+        return (error = Error_type::max_iterations);
     }
 
-    int Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
+    Error_type Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
         /*
          * Variation of damped least squares (levenberg-marquardt)
          * based on "Improved Damped Least Squares Solution with Joint Limits,
@@ -153,7 +152,7 @@ namespace robo{
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
-                return (error = E_NO_ERROR);
+                return (error = Error_type::no_error);
             }
             g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
             H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
@@ -168,10 +167,10 @@ namespace robo{
         }
         q_out = q;
         error_norm_IK = residual_norm;
-        return (error = E_MAX_ITERATIONS);
+        return (error = Error_type::max_iterations);
     }
 
-    int Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd){
+    Error_type Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd){
         /*
         * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
         * Mechanical Manipulators" by Wang & Chen 1991
@@ -193,7 +192,7 @@ namespace robo{
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
-                return (error = E_NO_ERROR);
+                return (error = Error_type::no_error);
             }
             //Matrix3d hh = f_end.orientation;
             //Matrix3d dd = f_target.orientation;
@@ -295,10 +294,10 @@ namespace robo{
         //      check boundary constraints
         // else nothing
         q_out = q;
-        return E_MAX_ITERATIONS;
+        return Error_type::max_iterations;
     }
 
-    int Kinematics::cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init){
+    Error_type Kinematics::cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init){
         /* 
         / Based on "Solvability-unconcerned Inverse Kinematics based on Levenberg-Marquardt method with Robuts Damping"
         / by Tomomichi Sugihara, 2009, International Conference on Humanoid Robots
@@ -319,7 +318,7 @@ namespace robo{
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
-                return (error = E_NO_ERROR);
+                return (error = Error_type::no_error);
             }
             g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
             H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
@@ -335,7 +334,7 @@ namespace robo{
         }
         q_out = q;
         error_norm_IK = residual_norm;
-        return (error = E_MAX_ITERATIONS);
+        return (error = Error_type::max_iterations);
     }
 
     void Kinematics::calculate_jacobian(const VectorXd& q){

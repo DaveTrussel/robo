@@ -240,7 +240,7 @@ SCENARIO("Kinematics tests Advanced"){
             VectorXd q_init = VectorXd::Zero(chain.nr_joints);
             kin.joint_to_cartesian(q);
             Frame target = kin.f_end;
-            int error = kin.cartesian_to_joint(target, q_init);
+            Error_type error = kin.cartesian_to_joint(target, q_init);
             VectorXd res = kin.q_out;
             kin.joint_to_cartesian(res);
             Frame check = kin.f_end;
@@ -248,7 +248,7 @@ SCENARIO("Kinematics tests Advanced"){
                 allclose(check.origin, target.origin, 0.0, abstol);
             }
             THEN("No error"){
-                REQUIRE(error == 1);
+                REQUIRE(error == Error_type::no_error);
             }
         } 
     }
@@ -307,7 +307,7 @@ SCENARIO("Dynamics tests"){
             std::cout << "RESULT: " << res.transpose();
             THEN("Equal torques in J2, J3 and J5"){
                 VectorXd compare(chain.nr_joints);
-                compare << 0.0, 4.9, 4.9, 0.0, 4.9, 0.0;
+                compare << 0.0, 19.7, 19.7, 0.0, 19.7, 0.0;
                 REQUIRE(res == compare);
             }
         }

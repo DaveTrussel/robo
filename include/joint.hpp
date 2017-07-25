@@ -30,7 +30,7 @@ namespace robo {
               const Joint_type type_in=Joint_type::Rotational,
               double q_min_in=std::numeric_limits<double>::min(),
               double q_max_in= std::numeric_limits<double>::max()):
-            id(id_in), type(type_in), axis(axis_in), frame(frame_in){
+            id(id_in), type(type_in), axis(axis_in.normalized()), frame(frame_in){
                 parameters.q_min = q_min_in;
                 parameters.q_max = q_max_in;
             };
