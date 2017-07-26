@@ -13,10 +13,8 @@ namespace robo{
 
         Chain():nr_joints(0), nr_links(0){};
 
-        Chain(std::vector<Link> links):nr_joints(0), nr_links(0){
-            for(const auto& link : links){
-                add_link(link);
-            }
+        Chain(const std::vector<Link>& links):nr_joints(0), nr_links(0){
+            add_links(links);
         };
         
         void add_link(const Link& link){
@@ -24,6 +22,12 @@ namespace robo{
             ++nr_links;
             if(link.has_joint()){
                 ++nr_joints;
+            }
+        };
+
+        void add_links(std::vector<Link)>& links){
+            for(const auto& link : links){
+                add_link(link);
             }
         };
     };
