@@ -8,8 +8,8 @@ namespace robo{
 
     // Constructors
     Kinematics::Kinematics(const Chain& chain_, int max_iter_, double eps_):
-    chain(chain_), nr_joints(chain.nr_joints), nr_links(chain.nr_links),
-    joint_roots(nr_joints), joint_tips(nr_joints),
+    chain(chain_), nr_joints(chain_.nr_joints), nr_links(chain_.nr_links),
+    joint_roots(chain_.nr_joints), joint_tips(chain_.nr_joints),
     max_iter(max_iter_), eps(eps_)
     {   
         link_tips = std::vector<Frame>(nr_links);
@@ -59,7 +59,7 @@ namespace robo{
 
     Error_type Kinematics::cartesian_to_joint(const Frame& f_target, const VectorXd& q_init){
         //cartesian_to_joint_ccd(f_target, q_init, max_iter/10);
-        Error_type error_sugihara = cartesian_to_joint_sugihara(f_target, q_out);
+        Error_type error_sugihara = cartesian_to_joint_sugihara(f_target, q_init);
         //int error_code_sugihara = cartesian_to_joint_sugihara(f_target, q_init);
         return error_sugihara;
     }
@@ -77,6 +77,7 @@ namespace robo{
             joint_to_cartesian(q);
             calculate_jacobian(q);
             residual = f_target - f_end;
+            clamp_magnitude(residual, 0.1);
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
@@ -105,6 +106,7 @@ namespace robo{
             joint_to_cartesian(q);
             calculate_jacobian(q);
             residual = f_target - f_end;
+            clamp_magnitude(residual, 0.1);
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
@@ -137,9 +139,8 @@ namespace robo{
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
         double residual_norm = std::numeric_limits<double>::max();
         double residual_norm_squared = std::numeric_limits<double>::max();
-        double param_lin = 1.0;
+        double param_lin = 10.0;
         int param_exp = 32; // must be an even number!
-        double lambda_i = 0.0;
         MatrixXd H(nr_joints, nr_joints);
         VectorXd g(nr_joints);
         q = q_init;
@@ -148,6 +149,7 @@ namespace robo{
             joint_to_cartesian(q);
             calculate_jacobian(q);
             residual = f_target - f_end;
+            clamp_magnitude(residual, 0.1);
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
@@ -159,7 +161,7 @@ namespace robo{
             residual_norm_squared = residual_norm * residual_norm;
             //factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
             for(int j=0; j<nr_joints; ++j){
-                factor_damp[j] = param_lin * std::pow((2*q[j]-q_max[j]-q_min[j])/(q_max[j]-q_min[j]), param_exp) + residual_norm_squared + 1e-10;
+                factor_damp[j] = param_lin * std::pow((2*q[j]-q_max[j]-q_min[j])/(q_max[j]-q_min[j]), param_exp) + residual_norm_squared + 1e-5;
             }
             H.diagonal() += factor_damp;
             delta_q = H.colPivHouseholderQr().solve(g); 
@@ -170,7 +172,7 @@ namespace robo{
         return (error = Error_type::max_iterations);
     }
 
-    Error_type Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd){
+    Error_type Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init){
         /*
         * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
         * Mechanical Manipulators" by Wang & Chen 1991
@@ -185,9 +187,10 @@ namespace robo{
         Vector3d Pih; // TODO rename
         Vector3d Pid;
 
-        for(int iter=0; iter<max_iter_ccd; iter++){
+        for(int iter=0; iter<max_iter; iter++){
             joint_to_cartesian(q);
             residual = f_target - f_end;
+            clamp_magnitude(residual, 0.5);
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
@@ -314,6 +317,7 @@ namespace robo{
             joint_to_cartesian(q);
             calculate_jacobian(q);
             residual = f_target - f_end;
+            clamp_magnitude(residual, 0.5);
             residual_norm = (weights_IK.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
@@ -349,6 +353,11 @@ namespace robo{
                 ++iter_joint;
             }
         }
+    }
+
+    void Kinematics::clamp_magnitude(Vector6d& residual, double max_norm){
+        double norm = residual.norm();
+        if(norm > max_norm){ residual = max_norm * residual / norm; }
     }
 
 }

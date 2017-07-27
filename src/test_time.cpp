@@ -1,14 +1,16 @@
-#define EIGEN_NO_MALLOC
+//#define EIGEN_NO_MALLOC
 // according to Eigen documentation this macro should not be used in "real-world code"
 // however we really dont want any calls to malloc because we are concerned about real-time issues
 // results in assertion failure when malloc is called by Eigen.
 
+#include "test_utilities.hpp"
 #include "kinematics.hpp"
 #include "dynamics.hpp"
 
 #include <Eigen/Dense>
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <chrono>
@@ -20,50 +22,67 @@ using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
-constexpr int nr_runs = 1e4;
-constexpr int nr_iter = 500;
+constexpr int nr_runs = 1e2;
+constexpr int nr_iter = 1000;
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
-// helper functions
-#define now() high_resolution_clock::now()
-
-VectorXd rand_joint_vector(int size, double min, double max){
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> distri(min, max);
-    VectorXd vec(size);
-    for(int i=0; i<size; ++i){
-        vec[i] = distri(gen);
+void time_inverse_kinematics(int method, Kinematics kin, int nr_runs){
+    vector<double>     timings;
+    vector<Error_type> error_types;
+    vector<bool>       joint_limit_compliances;
+    timings.reserve(nr_runs);
+    error_types.reserve(nr_runs);
+    joint_limit_compliances.reserve(nr_runs);
+    std::function<Error_type(Kinematics*, const Frame&, const VectorXd&)> func = &Kinematics::cartesian_to_joint;
+    switch(method){
+        case 0: func = &Kinematics::cartesian_to_joint_jacobian_transpose;
+                std::cout << "=== Jacobian transpose ==="       << std::endl;
+                break;
+        case 1: func = &Kinematics::cartesian_to_joint_ccd;
+                std::cout << "=== Cyclic Coordinate Descent ===" << std::endl;
+                break;
+        case 2: func = &Kinematics::cartesian_to_joint_levenberg;
+                std::cout << "=== Levenberg-Marquardt ==="       << std::endl;
+                break;
+        case 3: func = &Kinematics::cartesian_to_joint_sugihara;
+                std::cout << "=== Sugihara ==="                  << std::endl;
+                break;
+        case 4: func = &Kinematics::cartesian_to_joint_sugihara_joint_limits;
+                std::cout << "=== Sugihara Joint Limits ==="     << std::endl;
+                break;
     }
-    return vec;
+    auto tic = now();
+    auto toc = now();
+    auto duration = duration_cast<microseconds>( toc - tic ).count();
+    bool joint_limit_compliance{false};
+    Frame f_target{};
+    Error_type error_type{Error_type::no_error};
+    VectorXd q, q_init;
+    double q_min = -165.0/180.0*pi; // TODO make this more generic
+    double q_max = 165.0/180.0*pi;
+    for(int i=0; i<nr_runs; ++i){
+        q = rand_joint_vector(kin.nr_joints, q_min, q_max); // TODO make this more generic
+        q_init = rand_joint_vector(kin.nr_joints, q_min, q_max);
+        kin.joint_to_cartesian(q);
+        Frame f_target = kin.f_end;
+        tic = now();
+        error_type = func(&kin, f_target, q_init);
+        toc = now();
+        duration = duration_cast<microseconds>( toc - tic ).count();
+        joint_limit_compliance = kin.check_joint_limits(kin.q_out);
+        timings.push_back(duration);
+        error_types.push_back(error_type);
+        joint_limit_compliances.push_back(joint_limit_compliance);
+    }
+    print_timing_result(timings);
+    print_success_rates_IK(error_types);
+    print_joint_limits_compliance(joint_limit_compliances);
 }
-
-void print_timing_result(vector<double> timings){
-    double sum = 0;
-    double median = 0;
-    size_t len = timings.size();
-    sort(timings.begin(), timings.end());
-    double max = timings.back();
-    double min = timings.front();
-    for (double &dt: timings) {
-        sum += dt;
-    }
-    double average = sum / len;
-    if(len % 2 == 0){
-        median = (timings[len/2] + timings[len/2-1]) / 2.0;
-    }
-    else{
-        median = timings[len/2];
-    }
-    cout << "Timing results (in microseconds) from " << len << " runs:"<< endl
-         << "Average: " << average << endl
-         << "Median: " << median << endl
-         << "Min: " << min << endl
-         << "Max: " << max << endl;
-}
-
 
 int main () {
+    std::cout << std::fixed << std::setw( 12 ) << std::setprecision(2);
+    std::cout << "=== Timing tests of kinematic and dynamic algorithms  ===\n" << 
+                 "" << std::endl;
     std::srand(std::time(0));
 
     Vector3d axis_z, axis_y;
@@ -85,7 +104,6 @@ int main () {
     Frame tip = Frame(length);
 
     Inertia inertia = Inertia(1.0, length/2);
-    
     Link link_0 = Link(0, joint_none, tip, inertia);
     Link link_1 = Link(1, joint_wrist, tip, inertia);
     Link link_2 = Link(2, joint_ellbow, tip, inertia);
@@ -115,7 +133,7 @@ int main () {
     dq     = rand_joint_vector(chain.nr_joints, q_min, q_max);
     ddq    = rand_joint_vector(chain.nr_joints, q_min, q_max);
     q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    
+
     auto tic = now();
     kin.joint_to_cartesian(q);
     auto toc = now();
@@ -148,139 +166,7 @@ int main () {
     print_timing_result(timings);
     cout << endl;
 
-    // Time Inverse Kinematics
-    cout << "==============================" << endl 
-         << "Inverse kinematics Combined"    << endl
-         << "==============================" << endl;
-    timings.clear();
-    timings.reserve(nr_runs);
-    vector<Error_type> error_types;
-    error_types.reserve(nr_runs);
-    Error_type error_type = Error_type::no_error;
-    vector<bool> joint_limit_compliances;
-    joint_limit_compliances.reserve(nr_runs);
-    bool joint_limit_compliance = false;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        kin.joint_to_cartesian(q);
-        Frame f_target = kin.f_end;
-        tic = now();
-        error_type = kin.cartesian_to_joint(f_target, q_init);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        joint_limit_compliance = kin.check_joint_limits(kin.q_out);
-        timings.push_back(duration);
-        error_types.push_back(error_type);
-        joint_limit_compliances.push_back(joint_limit_compliance);
+    for(int i=0; i<5; ++i){
+        time_inverse_kinematics(i, kin, nr_runs);
     }
-    int nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
-    double successrate = 100.0 * double(nr_no_error)/nr_runs;
-    cout << "Successrate: " << successrate << "%" << endl;
-    int nr_in_JL = count(joint_limit_compliances.begin(), joint_limit_compliances.end(), true);
-    double rate_in_JL = 100.0 * double(nr_in_JL)/nr_runs;
-    cout << "Within joint limits: " << rate_in_JL << "%" << endl;
-    print_timing_result(timings);
-    cout << endl;
-
-    // Time Inverse Kinematics
-    cout << "==============================" << endl 
-         << "Inverse kinematics LM"          << endl
-         << "==============================" << endl;
-    timings.clear();
-    timings.reserve(nr_runs);
-    error_types.clear();
-    error_types.reserve(nr_runs);
-    error_type = Error_type::no_error;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        kin.joint_to_cartesian(q);
-        Frame f_target = kin.f_end;
-        tic = now();
-        error_type = kin.cartesian_to_joint_levenberg(f_target, q_init);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        timings.push_back(duration);
-        error_types.push_back(error_type);
-    }
-    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
-    successrate = 100.0 * double(nr_no_error)/nr_runs;
-    cout << "Successrate: " << successrate << "%" << endl;
-    print_timing_result(timings);
-    cout << endl;
-
-
-    // Time Inverse Kinematics
-    cout << "==============================" << endl 
-         << "Inverse kinematics Sugihara"    << endl
-         << "==============================" << endl;
-    timings.clear();
-    timings.reserve(nr_runs);
-    error_types.clear();
-    error_types.reserve(nr_runs);
-    error_type = Error_type::no_error;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        kin.joint_to_cartesian(q);
-        Frame f_target = kin.f_end;
-        tic = now();
-        error_type = kin.cartesian_to_joint_sugihara(f_target, q_init);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        timings.push_back(duration);
-        error_types.push_back(error_type);
-    }
-    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
-    successrate = 100.0 * double(nr_no_error)/nr_runs;
-    cout << "Successrate: " << successrate << "%" << endl;
-    print_timing_result(timings);
-    cout << endl;
-
-    cout << "==============================" << endl 
-         << "Inverse kinematics CCD"         << endl
-         << "==============================" << endl;
-    timings.clear();
-    timings.reserve(nr_runs);
-    error_types.clear();
-    error_types.reserve(nr_runs);
-    error_type = Error_type::no_error;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        kin.joint_to_cartesian(q);
-        Frame f_target = kin.f_end;
-        tic = now();
-        error_type = kin.cartesian_to_joint_ccd(f_target, q_init, nr_iter);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        timings.push_back(duration);
-        error_types.push_back(error_type);
-    }
-    nr_no_error = count(error_types.begin(), error_types.end(), Error_type::no_error);
-    successrate = 100.0 * double(nr_no_error)/nr_runs;
-    cout << "Successrate: " << successrate << "%" << endl;
-    print_timing_result(timings);
-    cout << endl;
-
-
-    // Time Inverse Dynamics
-    cout << "==============================" << endl 
-         << "Inverse dynamics"               << endl
-         << "==============================" << endl;
-    timings.clear();
-    timings.reserve(nr_runs);
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        dq = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        ddq = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        tic = now();
-        dyn.calculate_torques(q, dq, ddq);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        timings.push_back(duration);
-    }
-    print_timing_result(timings);
-    cout << endl;
 }

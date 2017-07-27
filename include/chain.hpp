@@ -25,7 +25,7 @@ namespace robo{
             }
         };
 
-        void add_links(std::vector<Link>& links){
+        void add_links(const std::vector<Link>& links){
             for(const auto& link : links){
                 add_link(link);
             }

@@ -3,6 +3,8 @@
 #include "chain.hpp"
 #include <Eigen/Dense>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 namespace robo{
 
@@ -16,6 +18,8 @@ namespace robo{
         // Members
         double error_norm_IK;
         Chain chain;
+        int nr_joints;
+        int nr_links;
         Frame f_end; // frame at the end of the chain 
         VectorXd q_out; // result of inverse kinematics
         std::vector<Frame> link_tips; // Frames at end of each link
@@ -32,6 +36,12 @@ namespace robo{
             bool is_within_joint_limits = true;
             for(int i=0; i<nr_joints; ++i){
                 if(q_min[i] > q[i] || q[i] > q_max[i]){ is_within_joint_limits = false; }
+            }
+            // DEBUG
+            if(!is_within_joint_limits){ 
+                std::cout << "q_min: " << q_min.transpose() << std::endl;
+                std::cout << "q    : " << q.transpose()     << std::endl;
+                std::cout << "q_max: " << q_max.transpose() << std::endl;
             }
             return is_within_joint_limits;
         };
@@ -83,7 +93,7 @@ namespace robo{
         * Check the return value to see if the solver was sucessfull (==1)
         */
 
-        Error_type cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init, const int max_iter_ccd=100);
+        Error_type cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init);
         /**
         * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
         * The result is stored in q_out
@@ -99,8 +109,6 @@ namespace robo{
 
     private:
         // Members
-        int nr_joints;
-        int nr_links;
         Error_type error;
 
         VectorXd q; // Joint positions
@@ -119,6 +127,8 @@ namespace robo{
 
         int max_iter;
         double eps;
+
+        void clamp_magnitude(Vector6d& residual, double max_norm);
     };
 
 }
