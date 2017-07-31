@@ -9,7 +9,7 @@ namespace robo{
     Dynamics::Dynamics(const Chain& chain_): joint_torques(chain_.nr_joints), chain(chain_), nr_links(chain_.nr_links), nr_joints(chain_.nr_joints),
         trans_to_parent(nr_links), motion_subspace(nr_links), velocities(nr_links), accelerations(nr_links), wrenches(nr_links){}
 
-    int Dynamics::calculate_torques(const VectorXd& q_, const VectorXd& dq_, const VectorXd& ddq_,
+    int Dynamics::calculate_generalized_forces(const VectorXd& q_, const VectorXd& dq_, const VectorXd& ddq_,
                                     const std::vector<Wrench>& wrenches_extern,
                                     const Vector3d& gravity_){
         /*

@@ -356,7 +356,7 @@ SCENARIO("Dynamics tests"){
 
         WHEN("Inverse Dynamics: Static Home position"){
             q = VectorXd::Zero(chain.nr_joints);
-            dyn.calculate_torques(q, grav);
+            dyn.calculate_generalized_forces(q, grav);
             VectorXd res = dyn.joint_torques;
             THEN("No torques at home position"){
                 REQUIRE(res == VectorXd::Zero(chain.nr_joints));
@@ -365,7 +365,7 @@ SCENARIO("Dynamics tests"){
 
         WHEN("Inverse Dynamics: Static J5 at 90°"){
             q << 0.0, 0, 0, 0.0, pi/2.0, 0;
-            dyn.calculate_torques(q, grav);
+            dyn.calculate_generalized_forces(q, grav);
             VectorXd res = dyn.joint_torques;
             THEN("Equal torques in J2, J3 and J5"){
                 VectorXd compare(chain.nr_joints);
@@ -376,7 +376,7 @@ SCENARIO("Dynamics tests"){
 
         WHEN("Inverse Dynamics: Static J1,J4 and J6 at 90°"){
             q << pi/2, 0, 0, pi/2, 0, pi/2;
-            dyn.calculate_torques(q, grav);
+            dyn.calculate_generalized_forces(q, grav);
             VectorXd res = dyn.joint_torques;
             THEN("Zero torques in all joints"){
                 VectorXd compare(chain.nr_joints);
@@ -388,7 +388,7 @@ SCENARIO("Dynamics tests"){
         WHEN("Inverse Dynamics: Static J5 at 90° and constant velocities"){
             q << 0.0, 0, 0, 0.0, pi/2.0, 0;
             dq = VectorXd::Constant(chain.nr_joints, 4.2);
-            dyn.calculate_torques(q, grav);
+            dyn.calculate_generalized_forces(q, grav);
             VectorXd res = dyn.joint_torques;
             THEN("Constant velocities does not change anything."){
                 VectorXd compare(chain.nr_joints);
@@ -402,7 +402,7 @@ SCENARIO("Dynamics tests"){
             dq = VectorXd::Zero(chain.nr_joints);
             double acc = 1.337;
             ddq << 0, 0, 0, 0, 0, acc;
-            dyn.calculate_torques(q, dq, ddq, grav);
+            dyn.calculate_generalized_forces(q, dq, ddq, grav);
             VectorXd res = dyn.joint_torques;
             THEN("Equal torques in all wrist joints"){
                 VectorXd compare(chain.nr_joints);
@@ -416,7 +416,7 @@ SCENARIO("Dynamics tests"){
             dq = VectorXd::Zero(chain.nr_joints);
             double acc = 4.2;
             ddq << acc, 0, 0, 0, 0, 0;
-            dyn.calculate_torques(q, dq, ddq, grav);
+            dyn.calculate_generalized_forces(q, dq, ddq, grav);
             VectorXd res = dyn.joint_torques;
             // TODO remove: std::cout << "RESULT: " << res.transpose() << std::endl;
             THEN("Torques in each wrist joint equal to inertia*acc of rest of chain"){
