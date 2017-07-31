@@ -167,6 +167,9 @@ int main () {
     }
     print_timing_result(timings);
     cout << endl;
+    cout << "==============================" << endl 
+         << "Inverse kinematics"             << endl
+         << "==============================" << endl;
 
     for(int i=0; i<5; ++i){
         time_inverse_kinematics(i, kin, nr_runs);

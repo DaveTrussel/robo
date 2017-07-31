@@ -14,7 +14,6 @@ namespace robo {
 
     class Joint{
     public:
-        
         // Members
         int id;
         Joint_type type;

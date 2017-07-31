@@ -23,12 +23,6 @@ namespace robo {
         
         Twist(): linear(Vector3d(0.0, 0.0, 0.0)), rotation(Vector3d(0.0, 0.0, 0.0)){};
 
-        // Operators
-        Twist& operator =(const Twist& other){
-            linear = other.linear;
-            rotation = other.rotation;
-            return *this;
-        };
     };
 
 

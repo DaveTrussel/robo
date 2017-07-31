@@ -11,7 +11,6 @@ namespace robo {
      * 6D Force, Torque
      */
     public:
-
         // Members
         Vector3d force;
         Vector3d torque;
@@ -28,12 +27,6 @@ namespace robo {
         };
 
         // Operators
-        Wrench& operator =(const Wrench& other){
-            force = other.force;
-            torque = other.torque;
-            return *this;
-        };
-
         Wrench& operator +=(const Wrench& other){
             force += other.force;
             torque += other.torque;
