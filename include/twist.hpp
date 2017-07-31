@@ -1,12 +1,15 @@
 #pragma once
 
-
 #include "typedef.hpp"
+
 #include <Eigen/Dense>
 
 namespace robo {
 
     class Twist{
+    /*
+     * 6D Velocity
+     */
     public:
 
         // Members

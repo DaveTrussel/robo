@@ -4,8 +4,7 @@
 
 namespace robo {
 
-    // TODO think about best place to define those aliases (own alias header file?)
-    constexpr int max_size = 10;
+    constexpr int max_size = 10; // maximum size of dynamically sized vectors and matrices
     using Vector3d  = Eigen::Vector3d;
     using Vector6d  = Eigen::Matrix<double, 6, 1>;
     using VectorXd  = Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_size, 1>; // set max size to avoid calls to malloc

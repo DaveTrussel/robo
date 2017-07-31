@@ -2,7 +2,9 @@
 
 #include "chain.hpp"
 #include "inertia.hpp"
+
 #include <Eigen/Dense>
+
 #include <vector>
 
 namespace robo{
@@ -34,8 +36,8 @@ namespace robo{
         Chain chain;
         int nr_links;
         int nr_joints;
-        std::vector<Frame> link_frames; // X
-        std::vector<Twist> unit_twists; // S
+        std::vector<Frame> trans_from_parent; // X_lambda
+        std::vector<Twist> motion_subspace; // S
         std::vector<Twist> velocities;
         std::vector<Twist> accelerations;
         std::vector<Wrench> wrenches;

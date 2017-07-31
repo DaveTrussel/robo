@@ -3,6 +3,7 @@
 #include "kinematics.hpp"
 
 #include <Eigen/Dense>
+
 #include <chrono>
 #include <random>
 #include <algorithm>

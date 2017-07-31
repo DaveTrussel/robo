@@ -1,7 +1,9 @@
 #pragma once
 
 #include "chain.hpp"
+
 #include <Eigen/Dense>
+
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -11,7 +13,6 @@ namespace robo{
     enum class Error_type { no_error,
                             max_iterations,
                             joint_limit_violation };
-
 
     class Kinematics{
     public:
@@ -37,12 +38,14 @@ namespace robo{
             for(int i=0; i<nr_joints; ++i){
                 if(q_min[i] > q[i] || q[i] > q_max[i]){ is_within_joint_limits = false; }
             }
+            /*
             // DEBUG
             if(!is_within_joint_limits){ 
                 std::cout << "q_min: " << q_min.transpose() << std::endl;
                 std::cout << "q    : " << q.transpose()     << std::endl;
                 std::cout << "q_max: " << q_max.transpose() << std::endl;
             }
+            */
             return is_within_joint_limits;
         };
 
@@ -60,52 +63,52 @@ namespace robo{
         */
 
         void calculate_jacobian(const VectorXd& q);
-        /**
-        * Calculates the jacobian (do calculate forward position before calling this function!)
-        * The result is stored in member 'jacobian'
-        */
+        /*
+         * Calculates the jacobian (do calculate forward position before calling this function!)
+         * The result is stored in member 'jacobian'
+         */
 
         Error_type cartesian_to_joint(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a combined algorithm)
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
+        /*
+         * Calculates the inverse kinematics (using a combined algorithm)
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
 
         Error_type cartesian_to_joint_jacobian_transpose(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a jacobian transpose algorithm)
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
+        /*
+         * Calculates the inverse kinematics (using a jacobian transpose algorithm)
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
 
         Error_type cartesian_to_joint_levenberg(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
-
-        Error_type cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a damped least squares algorithm) with "soft" joint limits
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
-
-        Error_type cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
+        /*
+         * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
 
         Error_type cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init);
-        /**
-        * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
-        * The result is stored in q_out
-        * Check the return value to see if the solver was sucessfull (==1)
-        */
+        /*
+         * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
+
+        Error_type cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init);
+        /*
+         * Calculates the inverse kinematics (using a damped least squares algorithm) with "soft" joint limits
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
+
+        Error_type cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init);
+        /*
+         * Calculates the inverse kinematics (using a cyclic coordinate descent algorithm)
+         * The result is stored in q_out
+         * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
+         */
 
     private:
         // Members
@@ -129,6 +132,9 @@ namespace robo{
         double eps;
 
         void clamp_magnitude(Vector6d& residual, double max_norm);
+        /*
+         * Restricts the maximum size of 'residual' to max_norm
+         */
     };
 
 }

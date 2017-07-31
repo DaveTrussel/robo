@@ -3,6 +3,7 @@
 #include "frame.hpp"
 #include "twist.hpp"
 #include "wrench.hpp"
+
 #include <Eigen/Dense>
 
 namespace robo{
@@ -28,7 +29,7 @@ namespace robo{
         }
 
     private:
-        Frame frame; // Inertia is always refers to a point / coordinate frame
+        Frame frame; // Inertia always refers to a point / coordinate frame
         double mass;
         Vector3d h; // center of mass times mass TODO find out how this is called (with respect to reference point)
         Matrix3d rot_inertia; // rotational inertia (with respect to reference point)

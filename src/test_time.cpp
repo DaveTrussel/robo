@@ -1,6 +1,6 @@
-//#define EIGEN_NO_MALLOC
+#define EIGEN_NO_MALLOC
 // according to Eigen documentation this macro should not be used in "real-world code"
-// however we really dont want any calls to malloc because we are concerned about real-time issues
+// however we really dont want any calls to malloc because we are concerned about real-time performance
 // results in assertion failure when malloc is called by Eigen.
 
 #include "test_utilities.hpp"
@@ -22,11 +22,17 @@ using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
-constexpr int nr_runs = 1e2;
+constexpr int nr_runs = 1e3;
 constexpr int nr_iter = 1000;
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
 void time_inverse_kinematics(int method, Kinematics kin, int nr_runs){
+/*
+ * Take a random start point and a random target point (all reachable) and check how the different
+ * nummerical IK solvers compare to each other.
+ * TODO instead of choosing completely random points, the tracking behaviour could be of interest. So
+ * check instead how well a IK algorithm would follow a reference path given in cartesian space.
+ */
     vector<double>     timings;
     vector<Error_type> error_types;
     vector<bool>       joint_limit_compliances;
@@ -77,6 +83,7 @@ void time_inverse_kinematics(int method, Kinematics kin, int nr_runs){
     print_timing_result(timings);
     print_success_rates_IK(error_types);
     print_joint_limits_compliance(joint_limit_compliances);
+    std::cout << std::endl;
 }
 
 int main () {
@@ -103,26 +110,21 @@ int main () {
     length << 0.0, 0.0, 0.5;
     Frame tip = Frame(length);
 
-    Inertia inertia = Inertia(1.0, length/2);
-    Link link_0 = Link(0, joint_none, tip, inertia);
-    Link link_1 = Link(1, joint_wrist, tip, inertia);
-    Link link_2 = Link(2, joint_ellbow, tip, inertia);
-    Link link_3 = Link(3, joint_ellbow, tip, inertia);
-    Link link_4 = Link(4, joint_wrist, tip, inertia);
-    Link link_5 = Link(5, joint_ellbow, tip, inertia);
-    Link link_6 = Link(6, joint_wrist, tip, inertia);
+    Inertia inertia = Inertia(1.0, length/2, Matrix3d::Identity());
+    std::vector<Link> links;
+    links.push_back(Link(0, joint_none,   tip, inertia));
+    links.push_back(Link(1, joint_wrist,  tip, inertia));
+    links.push_back(Link(2, joint_ellbow, tip, inertia));
+    links.push_back(Link(3, joint_ellbow, tip, inertia));
+    links.push_back(Link(4, joint_wrist,  tip, inertia));
+    links.push_back(Link(5, joint_ellbow, tip, inertia));
+    links.push_back(Link(6, joint_wrist,  tip, inertia));
     
     Chain chain;
-    chain.add_link(link_0);
-    chain.add_link(link_1);
-    chain.add_link(link_2);
-    chain.add_link(link_3);
-    chain.add_link(link_4);
-    chain.add_link(link_5);
-    chain.add_link(link_6);
+    chain.add_links(links);
     
     Kinematics kin = Kinematics(chain, nr_iter);
-    Dynamics dyn = Dynamics(chain);
+    Dynamics dyn   = Dynamics(chain);
 
     VectorXd q(chain.nr_joints);
     VectorXd dq(chain.nr_joints);

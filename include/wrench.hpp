@@ -1,23 +1,27 @@
 #pragma once
 
 #include "twist.hpp"
+
 #include <Eigen/Dense>
 
 namespace robo {
 
     class Wrench{
+    /*
+     * 6D Force, Torque
+     */
     public:
 
         // Members
-        Eigen::Vector3d force;
-        Eigen::Vector3d torque;
+        Vector3d force;
+        Vector3d torque;
 
         // Constructors
-        explicit Wrench(const Eigen::Vector3d& force_, const Eigen::Vector3d& torque_): force(force_), torque(torque_){};
+        explicit Wrench(const Vector3d& force_, const Vector3d& torque_): force(force_), torque(torque_){};
         
-        explicit Wrench(const Eigen::Vector3d& force_): force(force_), torque(Eigen::Vector3d(0.0, 0.0, 0.0)){};
+        explicit Wrench(const Vector3d& force_): force(force_), torque(Vector3d(0.0, 0.0, 0.0)){};
         
-        Wrench(): force(Eigen::Vector3d(0.0, 0.0, 0.0)), torque(Eigen::Vector3d(0.0, 0.0, 0.0)){};
+        Wrench(): force(Vector3d(0.0, 0.0, 0.0)), torque(Vector3d(0.0, 0.0, 0.0)){};
 
         double dot(const Twist& twist){
             return twist.linear.dot(force) + twist.rotation.dot(torque);

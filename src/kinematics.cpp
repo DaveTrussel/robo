@@ -1,5 +1,7 @@
-#include "../include/kinematics.hpp"
+#include "kinematics.hpp"
+
 #include <Eigen/Dense>
+
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -54,6 +56,20 @@ namespace robo{
                 f_end = f_end * chain.links[iter_link].pose(0.0);
             }
             link_tips[iter_link] = f_end;
+        }
+    }
+
+    void Kinematics::calculate_jacobian(const VectorXd& q){
+        int iter_joint = 0;
+        for(int iter_link=0; iter_link<chain.nr_links; ++iter_link){
+            if (chain.links[iter_link].has_joint()) {
+                // compute twist of the end effector motion caused by joint [jointndx]; expressed in world frame, with vel. ref. point equal to the end effector
+                Twist unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0)); // represent joint unit twist in world frame
+                Twist end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin); // change from joint_i seen on endeffector
+                jacobian.block<3,1>(0, iter_joint) << end_twist.linear;
+                jacobian.block<3,1>(3, iter_joint) << end_twist.rotation;
+                ++iter_joint;
+            }
         }
     }
 
@@ -129,12 +145,54 @@ namespace robo{
         return (error = Error_type::max_iterations);
     }
 
+    Error_type Kinematics::cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init){
+        /* 
+        / Based on "Solvability-unconcerned Inverse Kinematics based on Levenberg-Marquardt method with Robuts Damping"
+        / by Tomomichi Sugihara, 2009, International Conference on Humanoid Robots
+        */ 
+        Vector6d residual = Vector6d::Zero();
+        VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
+        double residual_norm = std::numeric_limits<double>::max();
+        double residual_norm_squared = std::numeric_limits<double>::max();
+        MatrixXd H(nr_joints, nr_joints);
+        VectorXd g(nr_joints);
+        q = q_init;
+        
+        for(int i=0; i<max_iter; ++i){
+            joint_to_cartesian(q);
+            calculate_jacobian(q);
+            residual = f_target - f_end;
+            clamp_magnitude(residual, 0.5);
+            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            if(residual_norm < eps){
+                q_out = q;
+                error_norm_IK = residual_norm;
+                return (error = Error_type::no_error);
+            }
+            g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
+            H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
+            residual_norm_squared = residual_norm * residual_norm;
+            factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
+            H.diagonal() += factor_damp;
+            delta_q = H.colPivHouseholderQr().solve(g); 
+            q += delta_q;
+
+
+            // check joint limits
+            // enforce_joint_limits(q);
+        }
+        q_out = q;
+        error_norm_IK = residual_norm;
+        return (error = Error_type::max_iterations);
+    }
+
     Error_type Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
         /*
          * Variation of damped least squares (levenberg-marquardt)
          * based on "Improved Damped Least Squares Solution with Joint Limits,
          * Joint Weights and Comfortable Criteria for Controlling Human-like Figures" by Na et al.
         */
+        // TODO based on a Chinese? paper, but the underlying theory is not all clear to me and the results not that good.
         Vector6d residual = Vector6d::Zero();
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
         double residual_norm = std::numeric_limits<double>::max();
@@ -177,6 +235,8 @@ namespace robo{
         * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
         * Mechanical Manipulators" by Wang & Chen 1991
         */
+        // TODO not working as intended (find out why)
+        // TODO only implemented to check feasability, needs work to speed up execution time
         q = q_init;
         std::vector<Vector3d> deltas_to_end_effector; // TODO make this more efficient
         deltas_to_end_effector.reserve(nr_joints);
@@ -298,61 +358,6 @@ namespace robo{
         // else nothing
         q_out = q;
         return Error_type::max_iterations;
-    }
-
-    Error_type Kinematics::cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init){
-        /* 
-        / Based on "Solvability-unconcerned Inverse Kinematics based on Levenberg-Marquardt method with Robuts Damping"
-        / by Tomomichi Sugihara, 2009, International Conference on Humanoid Robots
-        */ 
-        Vector6d residual = Vector6d::Zero();
-        VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
-        double residual_norm = std::numeric_limits<double>::max();
-        double residual_norm_squared = std::numeric_limits<double>::max();
-        MatrixXd H(nr_joints, nr_joints);
-        VectorXd g(nr_joints);
-        q = q_init;
-        
-        for(int i=0; i<max_iter; ++i){
-            joint_to_cartesian(q);
-            calculate_jacobian(q);
-            residual = f_target - f_end;
-            clamp_magnitude(residual, 0.5);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
-            if(residual_norm < eps){
-                q_out = q;
-                error_norm_IK = residual_norm;
-                return (error = Error_type::no_error);
-            }
-            g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
-            H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
-            residual_norm_squared = residual_norm * residual_norm;
-            factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
-            H.diagonal() += factor_damp;
-            delta_q = H.colPivHouseholderQr().solve(g); 
-            q += delta_q;
-
-
-            // check joint limits
-            // enforce_joint_limits(q);
-        }
-        q_out = q;
-        error_norm_IK = residual_norm;
-        return (error = Error_type::max_iterations);
-    }
-
-    void Kinematics::calculate_jacobian(const VectorXd& q){
-        int iter_joint = 0;
-        for(int iter_link=0; iter_link<chain.nr_links; ++iter_link){
-            if (chain.links[iter_link].has_joint()) {
-                // compute twist of the end effector motion caused by joint [jointndx]; expressed in world frame, with vel. ref. point equal to the end effector
-                Twist unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0)); // represent joint unit twist in world frame
-                Twist end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin); // change from joint_i seen on endeffector
-                jacobian.block<3,1>(0, iter_joint) << end_twist.linear;
-                jacobian.block<3,1>(3, iter_joint) << end_twist.rotation;
-                ++iter_joint;
-            }
-        }
     }
 
     void Kinematics::clamp_magnitude(Vector6d& residual, double max_norm){

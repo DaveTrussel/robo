@@ -1,8 +1,10 @@
 #pragma once
 
 #include "frame.hpp"
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+
 #include <cmath>
 
 
@@ -35,8 +37,11 @@ namespace robo {
                 parameters.q_max = q_max_in;
             };
 
-        // Member functions
+        // Public member functions
         Frame pose(const double& q)const{
+        /*
+         * Calculates the joint transformation from parent to successor represented in the joint root frame
+         */
             if(type == Joint_type::Rotational){
                 return Frame(frame.origin, rotate(q));
             }
@@ -49,6 +54,9 @@ namespace robo {
         };
 
         Twist twist(const double &dq)const{
+        /*
+         * Calculates the 6D velocity of the joint represented in the joint root frame
+         */
             Vector3d speed_lin = Vector3d::Zero();
             Vector3d speed_rot = Vector3d::Zero();
             if(type == Joint_type::Rotational){
@@ -60,6 +68,13 @@ namespace robo {
             return Twist(speed_lin, speed_rot);
         };
 
+        Twist motion_subspace()const{
+        /*
+         * Returns the subspace of motion for the given joint type represented in the joint root frame
+         */
+            return twist(1.0);
+        };
+
         void set_joint_limits(const double& q_min, const double& q_max){
             parameters.q_min = q_min;
             parameters.q_max = q_max;
@@ -67,7 +82,9 @@ namespace robo {
 
     private:
         Matrix3d rotate(const double& angle)const{
-            // Euler-Rodrigues formula (rotation around axis by angle)
+        /*
+         * Calculates the rotation matrix based on the Euler-Rodrigues formula (rotation around axis by angle)
+         */
             double theta = angle/2.0;
             double a = std::cos(theta);
             double sine = std::sin(theta);

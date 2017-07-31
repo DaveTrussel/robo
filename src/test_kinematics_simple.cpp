@@ -57,8 +57,6 @@ int main () {
 
     Joint joint_ellbow = Joint(0, ff, axis_y, Joint_type::Rotational, q_min, q_max);
     Joint joint_wrist = Joint(0, ff, axis_z, Joint_type::Rotational, q_min, q_max);
-    Joint joint_none = Joint(0, ff, axis_y, Joint_type::None);
-
 
     Vector3d length;
     length << 0, 0, 1;
@@ -108,13 +106,16 @@ int main () {
     double h = sin(q0)*cos(q12);
     double j = -sin(q12);
 
+    double k = -sin(q0);
+    double l =  cos(q0);
+
     cout << sin(q0) << "," << cos(q0) << endl;
 
     J <<  a, d, g,
           b, e, h,
           c, f, j,
-          0, 0, 0,
-          0, 1, 1,
+          0, k, k,
+          0, l, l,
           1, 0, 0;
 
     cout << "Jacobian analytical:\n" << J << endl;

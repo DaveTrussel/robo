@@ -2,11 +2,17 @@
 
 #include "twist.hpp"
 #include "wrench.hpp"
+
 #include <Eigen/Dense>
 
 namespace robo {
 
     class Frame{
+    /*
+     * Used to store either a point in space and its orientation, or a transformation
+     * Pay attention to always express quantaties in the same reference frame when doing calculations
+     * E.g. a velocity can be given in the frame of the current link or 
+     */
     public:
         // Members
         Vector3d origin;
@@ -31,7 +37,7 @@ namespace robo {
             return homo;
         };
         
-        Eigen::Vector3d nautical_angles()const{
+        Vector3d nautical_angles()const{
             return orientation.eulerAngles(0,1,2);
         };
 
@@ -41,13 +47,7 @@ namespace robo {
         };
 
         // Operators
-        Frame& operator =(const Frame& other){
-            origin = other.origin;
-            orientation = other.orientation;
-            return *this;
-        };
-        
-        Eigen::Vector3d operator *(const Eigen::Vector3d & arg) const{
+        Vector3d operator *(const Vector3d & arg) const{
             return origin + orientation*arg;
         };
     };
@@ -68,6 +68,9 @@ namespace robo {
     };
 
     inline Vector6d operator -(const Frame& left, const Frame& right){
+    /*
+     * Calculates the difference of two frames (position (elements 0 to 2) and orientation (elements 3 to 5))
+     */
         Vector6d delta_frame;
         delta_frame.block<3,1>(0,0) << left.origin - right.origin;
         Matrix3d rot_inv_rot;

@@ -3,7 +3,7 @@ project(robo)
 
 
 IF ( NOT CMAKE_BUILD_TYPE )
-  SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build. Options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+  SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build. Options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo." FORCE)
   MESSAGE( "Setting build type to '${CMAKE_BUILD_TYPE}'" )
 ELSE ( NOT CMAKE_BUILD_TYPE )
   MESSAGE( "Build type is set to '${CMAKE_BUILD_TYPE}' ." )
@@ -29,5 +29,7 @@ set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STAN
 # cmake>=3.1 not available on travis set std14 manually
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra" CACHE STRING "Compiler flags used by the Debug CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
+#set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
+#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
