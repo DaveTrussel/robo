@@ -60,11 +60,12 @@ namespace robo{
     }
 
     void Kinematics::calculate_jacobian(const VectorXd& q){
+    // always call joint_to_cartesian(q) before calling this function!
         int iter_joint = 0;
         for(int iter_link=0; iter_link<chain.nr_links; ++iter_link){
             if (chain.links[iter_link].has_joint()) {
                 // compute twist of the end effector motion caused by joint [jointndx]; expressed in world frame, with vel. ref. point equal to the end effector
-                Twist unit_twist = rotate_twist(joint_roots[iter_joint].orientation, chain.links[iter_link].twist(q(iter_joint), 1.0)); // represent joint unit twist in world frame
+                Twist unit_twist = joint_roots[iter_joint].orientation * chain.links[iter_link].twist(q(iter_joint), 1.0); // represent joint unit twist in world frame
                 Twist end_twist = change_twist_reference(unit_twist, f_end.origin - joint_tips[iter_joint].origin); // change from joint_i seen on endeffector
                 jacobian.block<3,1>(0, iter_joint) << end_twist.linear;
                 jacobian.block<3,1>(3, iter_joint) << end_twist.rotation;
@@ -74,16 +75,17 @@ namespace robo{
     }
 
     Error_type Kinematics::cartesian_to_joint(const Frame& f_target, const VectorXd& q_init){
+    // this is just a wrapper for the alorithm which is currently deemed "the best"
         //cartesian_to_joint_ccd(f_target, q_init, max_iter/10);
         Error_type error_sugihara = cartesian_to_joint_sugihara(f_target, q_init);
-        //int error_code_sugihara = cartesian_to_joint_sugihara(f_target, q_init);
         return error_sugihara;
     }
 
     Error_type Kinematics::cartesian_to_joint_jacobian_transpose(const Frame& f_target, const VectorXd& q_init){
-        /*
-        / Simple jacobian transpose method (not robust, but fast) will not handle singularities well
-        */
+    /*
+     * Simple jacobian transpose method (not robust, but fast) will not handle singularities well
+     * does NOT account for joint limits
+     */
         Vector6d residual = Vector6d::Zero();
         double residual_norm = std::numeric_limits<double>::max();
         q = q_init;
@@ -110,8 +112,9 @@ namespace robo{
     }
 
     Error_type Kinematics::cartesian_to_joint_levenberg(const Frame& f_target, const VectorXd& q_init){
-        // modified version of
-        // https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf
+    // modified version of
+    // https://groups.csail.mit.edu/drl/journal_club/papers/033005/buss-2004.pdf
+    // does NOT account for joint limits
         Vector6d residual = Vector6d::Zero();
         Vector6d factor_damp = Vector6d::Constant(0.1);
         double residual_norm = std::numeric_limits<double>::max();
@@ -146,10 +149,11 @@ namespace robo{
     }
 
     Error_type Kinematics::cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init){
-        /* 
-        / Based on "Solvability-unconcerned Inverse Kinematics based on Levenberg-Marquardt method with Robuts Damping"
-        / by Tomomichi Sugihara, 2009, International Conference on Humanoid Robots
-        */ 
+    /* 
+     * Based on "Solvability-unconcerned Inverse Kinematics based on Levenberg-Marquardt method with Robuts Damping"
+     * by Tomomichi Sugihara, 2009, International Conference on Humanoid Robots
+     * does NOT account for joint_limits
+     */ 
         Vector6d residual = Vector6d::Zero();
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
         double residual_norm = std::numeric_limits<double>::max();
@@ -187,12 +191,14 @@ namespace robo{
     }
 
     Error_type Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
-        /*
-         * Variation of damped least squares (levenberg-marquardt)
-         * based on "Improved Damped Least Squares Solution with Joint Limits,
-         * Joint Weights and Comfortable Criteria for Controlling Human-like Figures" by Na et al.
-        */
+    /*
+     * Variation of damped least squares (levenberg-marquardt)
+     * based on "Improved Damped Least Squares Solution with Joint Limits,
+     * Joint Weights and Comfortable Criteria for Controlling Human-like Figures" by Na et al.
+     */
         // TODO based on a Chinese? paper, but the underlying theory is not all clear to me and the results not that good.
+        // TODO they introduce some sort of soft constraint (in optimization this is quite common, however on the objective function and not on the damping factor?)
+        // TODO this seems to adversely influence the success of method
         Vector6d residual = Vector6d::Zero();
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
         double residual_norm = std::numeric_limits<double>::max();
@@ -231,10 +237,10 @@ namespace robo{
     }
 
     Error_type Kinematics::cartesian_to_joint_ccd(const Frame& f_target, const VectorXd& q_init){
-        /*
-        * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
-        * Mechanical Manipulators" by Wang & Chen 1991
-        */
+    /*
+     * Based on " A Combined Optimization Method for Solving the Inverse Kinematics Problem of 
+     * Mechanical Manipulators" by Wang & Chen 1991
+     */
         // TODO not working as intended (find out why)
         // TODO only implemented to check feasability, needs work to speed up execution time
         q = q_init;

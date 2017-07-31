@@ -18,17 +18,21 @@ namespace robo{
         Dynamics(const Chain& chain);
         
         // Member functions
-        int calculate_torques(const VectorXd& q, const VectorXd& dq, const VectorXd& ddq,
+        int calculate_generalized_forces(const VectorXd& q, const VectorXd& dq, const VectorXd& ddq,
                               const std::vector<Wrench>& wrenches_extern,
                               const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665));
+        /*
+         * solves the inverse dynamics based on a recursive newton-euler algorithm
+         * TODO velocities, accelerations, wrenches  of each link are calculated "for free" -> make them accessable
+         */
 
-        inline int calculate_torques(const VectorXd& q, const VectorXd& dq,const VectorXd& ddq,
+        inline int calculate_generalized_forces(const VectorXd& q, const VectorXd& dq,const VectorXd& ddq,
                               const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665)){
-            return calculate_torques(q, dq, ddq, std::vector<Wrench>(chain.nr_links), gravity);
+            return calculate_generalized_forces(q, dq, ddq, std::vector<Wrench>(chain.nr_links), gravity);
         };
 
-        inline int calculate_torques(const VectorXd& q, const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665)){
-            return calculate_torques(q, VectorXd::Zero(chain.nr_joints), VectorXd::Zero(chain.nr_joints), std::vector<Wrench>(chain.nr_links), gravity);
+        inline int calculate_generalized_forces(const VectorXd& q, const Vector3d& gravity=Vector3d(0.0, 0.0, -9.80665)){
+            return calculate_generalized_forces(q, VectorXd::Zero(chain.nr_joints), VectorXd::Zero(chain.nr_joints), std::vector<Wrench>(chain.nr_links), gravity);
         };
     
     private:
@@ -36,7 +40,7 @@ namespace robo{
         Chain chain;
         int nr_links;
         int nr_joints;
-        std::vector<Frame> trans_from_parent; // X_lambda
+        std::vector<Frame> trans_to_parent; // i_X_lambda
         std::vector<Twist> motion_subspace; // S
         std::vector<Twist> velocities;
         std::vector<Twist> accelerations;

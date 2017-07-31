@@ -8,7 +8,7 @@ namespace robo {
 
     class Twist{
     /*
-     * 6D Velocity
+     * 6D Spatial Motion Vector
      */
     public:
 
@@ -23,28 +23,19 @@ namespace robo {
         
         Twist(): linear(Vector3d(0.0, 0.0, 0.0)), rotation(Vector3d(0.0, 0.0, 0.0)){};
 
-    };
+        Twist cross(const Twist& other){
+            return Twist(rotation.cross(other.linear) + linear.cross(other.rotation),
+                         rotation.cross(other.rotation));
+        }
 
-
-    inline Twist rotate_twist(const Matrix3d& rot, const Twist& twist){
-        return Twist(rot * twist.linear, rot * twist.rotation);
     };
 
     inline Twist change_twist_reference(const Twist& twist, const Vector3d& delta_ref){
         return Twist(twist.linear + twist.rotation.cross(delta_ref), twist.rotation);
     };
 
-    inline Twist multiply_twists(const Twist& lhs, const Twist& rhs){
-        return Twist(lhs.rotation.cross(rhs.linear) + lhs.linear.cross(rhs.rotation), lhs.rotation.cross(rhs.rotation));
-    };
-
     inline Twist operator +(const Twist& lhs, const Twist& rhs){
         return Twist(lhs.linear+rhs.linear, lhs.rotation+rhs.rotation);
-    };
-
-    inline Twist operator *(const Twist& lhs, const Twist& rhs){
-        return Twist(lhs.rotation.cross(rhs.linear) + lhs.linear.cross(rhs.rotation),
-                     lhs.rotation.cross(rhs.rotation));
     };
 
     inline Twist operator *(const Matrix3d& rot, const Twist& twist){
