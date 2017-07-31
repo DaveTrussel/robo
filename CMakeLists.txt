@@ -30,6 +30,6 @@ set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STAN
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra" CACHE STRING "Compiler flags used by the Debug CMAKE_BUILD_TYPE." FORCE)
 #set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wall -Wextra -march=native" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
 #set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -DNDEBUG -g -Wall -Wextra -march=native" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
