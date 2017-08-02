@@ -304,8 +304,11 @@ SCENARIO("Kinematics tests Advanced"){
             VectorXd res = kin.q_out;
             kin.joint_to_cartesian(res);
             Frame check = kin.f_end;
-            THEN("Result of IK  yields almost same point through FK"){
+            THEN("Result of IK yields almost same point through FK"){
                 allclose(check.origin, target.origin, 0.0, abstol);
+            }
+            THEN("Result of IK yields also same orientation"){
+                allclose(check.orientation, target.orientation, 0.0, abstol);
             }
             THEN("No error"){
                 REQUIRE(error == Error_type::no_error);
@@ -390,7 +393,7 @@ SCENARIO("Dynamics tests"){
             dq = VectorXd::Constant(chain.nr_joints, 4.2);
             dyn.calculate_generalized_forces(q, grav);
             VectorXd res = dyn.joint_torques;
-            THEN("Constant velocities does not change anything."){
+            THEN("Constant velocities does not change anything compared to static case."){
                 VectorXd compare(chain.nr_joints);
                 compare << 0.0, 2*g, 2*g, 0.0, 2*g, 0.0;
                 REQUIRE(allclose(res, compare, 0.0, abstol));
@@ -418,7 +421,6 @@ SCENARIO("Dynamics tests"){
             ddq << acc, 0, 0, 0, 0, 0;
             dyn.calculate_generalized_forces(q, dq, ddq, grav);
             VectorXd res = dyn.joint_torques;
-            // TODO remove: std::cout << "RESULT: " << res.transpose() << std::endl;
             THEN("Torques in each wrist joint equal to inertia*acc of rest of chain"){
                 VectorXd compare(chain.nr_joints);
                 compare << 6*acc, 0.0, 0.0, 3*acc, 0.0, acc;

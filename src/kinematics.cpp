@@ -29,7 +29,7 @@ namespace robo{
         A =                 MatrixXd::Zero(nr_joints, nr_joints);
         b =                 VectorXd::Zero(nr_joints);
         
-        weights_IK << 1, 1, 1, 0.1, 0.1, 0.1;
+        weights_cartesian << 1, 1, 1, 0.1, 0.1, 0.1;
 
         int iter_joint = 0;
         for(const auto& link: chain.links){
@@ -96,7 +96,7 @@ namespace robo{
             calculate_jacobian(q);
             residual = f_target - f_end;
             clamp_magnitude(residual, 0.1);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            residual_norm = (weights_cartesian.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
@@ -126,7 +126,7 @@ namespace robo{
             calculate_jacobian(q);
             residual = f_target - f_end;
             clamp_magnitude(residual, 0.1);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            residual_norm = (weights_cartesian.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
@@ -158,8 +158,6 @@ namespace robo{
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
         double residual_norm = std::numeric_limits<double>::max();
         double residual_norm_squared = std::numeric_limits<double>::max();
-        MatrixXd H(nr_joints, nr_joints);
-        VectorXd g(nr_joints);
         q = q_init;
         
         for(int i=0; i<max_iter; ++i){
@@ -167,18 +165,19 @@ namespace robo{
             calculate_jacobian(q);
             residual = f_target - f_end;
             clamp_magnitude(residual, 0.5);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            residual_norm = (weights_cartesian.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
                 return (error = Error_type::no_error);
             }
-            g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
-            H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
+            b = jacobian.transpose() * weights_cartesian.asDiagonal() * residual;
+            A = jacobian.transpose() * weights_cartesian.asDiagonal() * jacobian;
             residual_norm_squared = residual_norm * residual_norm;
             factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
-            H.diagonal() += factor_damp;
-            delta_q = H.colPivHouseholderQr().solve(g); 
+            A.diagonal() += factor_damp;
+            delta_q = A.colPivHouseholderQr().solve(b);
+            limit_step_size(delta_q, 0.25);
             q += delta_q;
 
 
@@ -192,44 +191,57 @@ namespace robo{
 
     Error_type Kinematics::cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init){
     /*
-     * Variation of damped least squares (levenberg-marquardt)
-     * based on "Improved Damped Least Squares Solution with Joint Limits,
-     * Joint Weights and Comfortable Criteria for Controlling Human-like Figures" by Na et al.
+     * Variation of damped least squares (levenberg-marquardt) with selective weights
+     * based on "ROBUST INVERSE KINEMATICS USING DAMPED LEAST SQUARES WITH DYNAMIC WEIGHTING" by Schinstock et al.
      */
-        // TODO based on a Chinese? paper, but the underlying theory is not all clear to me and the results not that good.
-        // TODO they introduce some sort of soft constraint (in optimization this is quite common, however on the objective function and not on the damping factor?)
-        // TODO this seems to adversely influence the success of method
         Vector6d residual = Vector6d::Zero();
+        Vector6d residual_w = Vector6d::Zero();
         VectorXd factor_damp = VectorXd::Constant(nr_joints, 0.1);
+        VectorXd weights_joints = VectorXd::Constant(nr_joints, 1.0);
         double residual_norm = std::numeric_limits<double>::max();
-        double residual_norm_squared = std::numeric_limits<double>::max();
-        double param_lin = 10.0;
-        int param_exp = 32; // must be an even number!
+        double alpha_0 = 0.1;
+        double w_q_0 = 1e-10;
+        std::vector<double> u_l(nr_joints, 1.0);
+        constexpr double du = 0.5;
+        constexpr double d_lim_0 = 0.5;
         MatrixXd H(nr_joints, nr_joints);
-        VectorXd g(nr_joints);
         q = q_init;
         
         for(int i=0; i<max_iter; ++i){
             joint_to_cartesian(q);
             calculate_jacobian(q);
             residual = f_target - f_end;
-            clamp_magnitude(residual, 0.1);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            clamp_magnitude(residual, 0.5);
+            //std::cout << "residual: " << residual.transpose() << std::endl;
+            residual_w = weights_cartesian.asDiagonal() * residual;
+            residual_norm = residual_w.norm();
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
                 return (error = Error_type::no_error);
             }
-            g = jacobian.transpose() * weights_IK.asDiagonal() * residual;
-            H = jacobian.transpose() * weights_IK.asDiagonal() * jacobian;
-            residual_norm_squared = residual_norm * residual_norm;
             //factor_damp = VectorXd::Constant(nr_joints, residual_norm_squared + 1e-10);
             for(int j=0; j<nr_joints; ++j){
-                factor_damp[j] = param_lin * std::pow((2*q[j]-q_max[j]-q_min[j])/(q_max[j]-q_min[j]), param_exp) + residual_norm_squared + 1e-5;
+                
+                // distance until next joint limit
+                double d_lim = distance_to_next_joint_limit(j);     
+                // joint limit ramp function
+                if(d_lim < d_lim_0){ u_l[j] = std::max(u_l[j]-du, d_lim/d_lim_0); }
+                else               { u_l[j] = std::min(u_l[j]+du, 1.0); }
+                double alpha_li = alpha_0 * (1.0 - u_l[j]*u_l[j]);
+                factor_damp[j] =  alpha_li + 1e-5;
+                weights_joints[j] = w_q_0 + (1.0 - w_q_0)*u_l[j];
+                //std::cout << "Joint " << j << ":" << q[j] << ", d_l:" << d_lim << ", u_l:" << u_l[j] << ", alpha: " << alpha_li << ", w:" << weights_joints[j] << std::endl;
             }
+            //std::cout << std::endl;
+            jacobian_weighted = weights_cartesian.asDiagonal() * jacobian * weights_joints.asDiagonal();
+            H = jacobian_weighted * jacobian_weighted.transpose();
             H.diagonal() += factor_damp;
-            delta_q = H.colPivHouseholderQr().solve(g); 
+            delta_q = H.colPivHouseholderQr().solve(residual_w); // not yet delta_q
+            delta_q = weights_joints.asDiagonal() * jacobian_weighted.transpose() * delta_q;
+            limit_step_size(delta_q, du/3.0);
             q += delta_q;
+            enforce_joint_limits(q);
         }
         q_out = q;
         error_norm_IK = residual_norm;
@@ -257,7 +269,7 @@ namespace robo{
             joint_to_cartesian(q);
             residual = f_target - f_end;
             clamp_magnitude(residual, 0.5);
-            residual_norm = (weights_IK.asDiagonal()*residual).norm();
+            residual_norm = (weights_cartesian.asDiagonal()*residual).norm();
             if(residual_norm < eps){
                 q_out = q;
                 error_norm_IK = residual_norm;
@@ -369,6 +381,22 @@ namespace robo{
     void Kinematics::clamp_magnitude(Vector6d& residual, double max_norm){
         double norm = residual.norm();
         if(norm > max_norm){ residual = max_norm * residual / norm; }
+    }
+
+    void Kinematics::limit_step_size(VectorXd& delta_q, double max_joint_step){
+        for(int i=0; i<delta_q.size(); ++i){
+            if(delta_q[i] >  max_joint_step){ delta_q[i] =  max_joint_step; }
+            if(delta_q[i] < -max_joint_step){ delta_q[i] = -max_joint_step; }
+        }
+    }
+
+    double Kinematics::distance_to_next_joint_limit(const int& j)const{
+    // returns the distance to the next joint limit in the direction of the last delta_q step
+        double d_lim = 0;
+        if(delta_q[j] >= 0){ d_lim = q_max[j] - q[j]; } // if we were moving towards q_max
+        else               { d_lim = q[j] - q_min[j]; } // if we were moving towards q_min
+        if(d_lim < 0.0){ d_lim = 0.0; } // if we already moved past the limit return 0 instead of negative number
+        return d_lim;
     }
 
 }

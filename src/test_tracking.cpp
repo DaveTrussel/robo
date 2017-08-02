@@ -22,24 +22,19 @@ using namespace robo;
 using namespace std;
 using namespace std::chrono;
 
-constexpr int nr_runs = 1e3;
+constexpr int nr_steps = 10;
 constexpr int nr_iter = 300;
 constexpr double abs_tol = 1e-4;
 constexpr auto pi = 3.141592653589793238462643383279502884L;
 
-void time_inverse_kinematics(int method, Kinematics kin, int nr_runs){
+void track_inverse_kinematics(int method, Kinematics kin, int nr_steps){
 /*
- * Take a random start point and a random target point (all reachable) and check how the different
- * nummerical IK solvers compare to each other.
- * TODO instead of choosing completely random points, the tracking behaviour could be of interest. So
- * check instead how well a IK algorithm would follow a reference path given in cartesian space.
+ * track behaviour of different algorithms
  */
-    vector<double>     timings;
     vector<Error_type> error_types;
     vector<bool>       joint_limit_compliances;
-    timings.reserve(nr_runs);
-    error_types.reserve(nr_runs);
-    joint_limit_compliances.reserve(nr_runs);
+    error_types.reserve(nr_steps);
+    joint_limit_compliances.reserve(nr_steps);
     std::function<Error_type(Kinematics*, const Frame&, const VectorXd&)> func = &Kinematics::cartesian_to_joint;
     switch(method){
         case 0: func = &Kinematics::cartesian_to_joint_jacobian_transpose;
@@ -58,50 +53,45 @@ void time_inverse_kinematics(int method, Kinematics kin, int nr_runs){
                 std::cout << "=== Sugihara Joint Limits ==="     << std::endl;
                 break;
     }
-    auto tic = now();
-    auto toc = now();
-    auto duration = duration_cast<microseconds>( toc - tic ).count();
     bool joint_limit_compliance{false};
     Frame f_target{};
     Error_type error_type{Error_type::no_error};
-    VectorXd q, q_init;
-    double q_min = -165.0/180.0*pi; // TODO make this more generic
-    double q_max = 165.0/180.0*pi;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(kin.nr_joints, q_min, q_max); // TODO make this more generic
-        q_init = rand_joint_vector(kin.nr_joints, q_min, q_max);
-        //q_init = VectorXd::Constant(kin.nr_joints, 0.5);
-        kin.joint_to_cartesian(q);
+    VectorXd q, q_target;
+    double line_length = 3.0;
+    Vector3d starting_point(3, 0, 0);
+    double step_size = line_length/nr_steps;
+    Frame ff{starting_point};
+    q        = VectorXd::Constant(kin.nr_joints, 0.5);
+    q_target = q + VectorXd::Constant(kin.nr_joints, step_size);
+    error_type = func(&kin, ff, q);
+    for(int i=0; i<nr_steps; ++i){
+        q = kin.q_out;
+        ff.origin += Vector3d(0.0, 0.0, line_length/step_size);
+
         Frame f_target = kin.f_end;
-        tic = now();
-        error_type = func(&kin, f_target, q_init);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
+        error_type = func(&kin, f_target, q);
         if(error_type == Error_type::no_error){
             joint_limit_compliance = kin.check_joint_limits(kin.q_out);
             if(!joint_limit_compliance){ 
-                std::cout << "q_init:" << q_init.transpose() << std::endl;
-                std::cout << "q_target:" << q.transpose() << std::endl; 
+                std::cout << "q_init:" << q.transpose() << std::endl;
             }
         }
         else{
             joint_limit_compliance = false; // only relevant for successfull solutions
         }
-        timings.push_back(duration);
+        if(joint_limit_compliance == false){ std::cout << "FAILED! at step:" << i <<" "; } // either no solution or not within joint limits
         error_types.push_back(error_type);
         joint_limit_compliances.push_back(joint_limit_compliance);
     }
-    print_timing_result(timings);
-    print_success_rates_IK(error_types);
-    print_joint_limits_compliance(joint_limit_compliances);
     std::cout << std::endl;
 }
 
 int main () {
     std::cout << std::fixed << std::setw( 12 ) << std::setprecision(2);
-    std::cout << "=== Timing tests of kinematic and dynamic algorithms  ===\n" << 
-                 "Start and target point are both chosen at random within  \n" <<
-                 "the working range of the robot." << std::endl;
+    std::cout << "=== Tracking tests of kinematic algorithms  ===\n" << 
+                 "How well can the inverse kinematic algorithms  \n" <<
+                 "follow a \"line\" (evenly spaced points) in    \n" <<
+                 "cartesian space." << std::endl;
     std::srand(std::time(0));
 
     Vector3d axis_z, axis_y;
@@ -138,23 +128,6 @@ int main () {
     Kinematics kin = Kinematics(chain, nr_iter, abs_tol);
     Dynamics dyn   = Dynamics(chain);
 
-    VectorXd q(chain.nr_joints);
-    VectorXd dq(chain.nr_joints);
-    VectorXd ddq(chain.nr_joints);
-    VectorXd q_init(chain.nr_joints);
-
-    q      = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    dq     = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    ddq    = rand_joint_vector(chain.nr_joints, q_min, q_max);
-    q_init = rand_joint_vector(chain.nr_joints, q_min, q_max);
-
-    auto tic = now();
-    kin.joint_to_cartesian(q);
-    auto toc = now();
-    auto duration = duration_cast<microseconds>( toc - tic ).count();
-
-    vector<double> timings;
-    timings.reserve(nr_runs);
 
     if(mlockall(MCL_CURRENT)){
         cout << "Successfully locked current memory pages into RAM before start of tests." 
@@ -164,26 +137,11 @@ int main () {
         cout << "Locking memory pages failed.\n" << endl;
     }
 
-
-    // Time Forward Kinematics
     cout << "==============================" << endl 
-         << "Forward kinematics"             << endl
-         << "==============================" << endl;
-    for(int i=0; i<nr_runs; ++i){
-        q = rand_joint_vector(chain.nr_joints, q_min, q_max);
-        tic = now();
-        kin.joint_to_cartesian(q);
-        toc = now();
-        duration = duration_cast<microseconds>( toc - tic ).count();
-        timings.push_back(duration);
-    }
-    print_timing_result(timings);
-    cout << endl;
-    cout << "==============================" << endl 
-         << "Inverse kinematics"             << endl
+         << "Inverse kinematics Tracking"    << endl
          << "==============================" << endl;
 
     for(int i=0; i<5; ++i){
-        time_inverse_kinematics(i, kin, nr_runs);
+        track_inverse_kinematics(i, kin, nr_steps);
     }
 }

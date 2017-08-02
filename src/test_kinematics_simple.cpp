@@ -78,10 +78,10 @@ int main () {
     Kinematics kin = Kinematics(chain, max_iter);
 
     VectorXd q_target(chain.nr_joints), q_init(chain.nr_joints);
-    double q0 = q_min/3.01;
-    double q1 = q_min/3.01;
-    double q2 = q_min/3.01;
-    q_target << q0*2, q1*2, q2*2;
+    double q0 = q_min/1.05;
+    double q1 = q_min/1.05;
+    double q2 = q_min/1.05;
+    q_target << -q0, -q1, -q2;
     q_init << q0, q1, q2;
 
     kin.joint_to_cartesian(q_init);

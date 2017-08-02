@@ -25,7 +25,7 @@ namespace robo{
         VectorXd q_out; // result of inverse kinematics
         std::vector<Frame> link_tips; // Frames at end of each link
         MatrixXd jacobian;
-        Vector6d weights_IK; // weigths of the IK algorithm (3 position and 3 orientation)
+        Vector6d weights_cartesian; // weigths of the IK algorithm (3 position and 3 orientation)
 
         // Constructors
         Kinematics(const Chain& chain,
@@ -38,14 +38,14 @@ namespace robo{
             for(int i=0; i<nr_joints; ++i){
                 if(q_min[i] > q[i] || q[i] > q_max[i]){ is_within_joint_limits = false; }
             }
-            /*
+
             // DEBUG
             if(!is_within_joint_limits){ 
                 std::cout << "q_min: " << q_min.transpose() << std::endl;
                 std::cout << "q    : " << q.transpose()     << std::endl;
                 std::cout << "q_max: " << q_max.transpose() << std::endl;
             }
-            */
+            
             return is_within_joint_limits;
         };
 
@@ -92,13 +92,14 @@ namespace robo{
         Error_type cartesian_to_joint_sugihara(const Frame& f_target, const VectorXd& q_init);
         /*
          * Calculates the inverse kinematics (using a dynamically damped Levenberg-Marquardt algorithm)
+         * Similar but not equal to 'cartesian_to_joint_levenberg'
          * The result is stored in q_out
          * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
          */
 
         Error_type cartesian_to_joint_sugihara_joint_limits(const Frame& f_target, const VectorXd& q_init);
         /*
-         * Calculates the inverse kinematics (using a damped least squares algorithm) with "soft" joint limits
+         * Calculates the inverse kinematics (using a damped least squares algorithm with selective weights)
          * The result is stored in q_out
          * Check the return value to see if the solver was sucessfull (==Error_type::no_error)
          */
@@ -135,6 +136,10 @@ namespace robo{
         /*
          * Restricts the maximum size of 'residual' to max_norm
          */
+
+        void limit_step_size(VectorXd& delta_q, double max_joint_step);
+
+        double distance_to_next_joint_limit(const int& j)const;
     };
 
 }

@@ -17,11 +17,14 @@ set(SRC_LIB src/kinematics.cpp src/dynamics.cpp)
 set(SRC_TEST_UNIT ${SRC_LIB} src/test_unit.cpp)
 set(SRC_TEST_TIME ${SRC_LIB} src/test_time.cpp)
 set(SRC_TEST_KINEMATICS_SIMPLE ${SRC_LIB} src/test_kinematics_simple.cpp)
+set(SRC_TEST_TRACKING ${SRC_LIB} src/test_tracking.cpp)
 
 
 add_executable(test_unit ${SRC_TEST_UNIT} ${HEADERS} ${HEADERS_TEST})
 add_executable(test_time ${SRC_TEST_TIME} ${HEADERS} ${HEADERS_TEST})
 add_executable(test_kinematics_simple ${SRC_TEST_KINEMATICS_SIMPLE} ${HEADERS} ${HEADERS_TEST})
+add_executable(test_tracking ${SRC_TEST_TRACKING} ${HEADERS} ${HEADERS_TEST})
+
 
 
 set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STANDARD 14)
