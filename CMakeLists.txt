@@ -35,6 +35,11 @@ PRIVATE
   ${nlopt_BINARY_DIR}/src/api
 )
 
+target_link_libraries(${PROJECT_NAME}
+PRIVATE
+  nlopt
+)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 add_executable(test_unit
@@ -43,7 +48,6 @@ add_executable(test_unit
 
 target_link_libraries(test_unit
   ${PROJECT_NAME}
-  nlopt
 )
 
 target_include_directories(test_unit
@@ -64,5 +68,19 @@ PRIVATE
 )
 
 target_link_libraries(test_time
+  ${PROJECT_NAME}
+)
+
+add_executable(test_inverse_kinematics
+  src/robo/test/inverse_kinematics.cpp
+)
+
+target_include_directories(test_inverse_kinematics
+PRIVATE
+  src/
+  third_party/eigen/
+)
+
+target_link_libraries(test_inverse_kinematics
   ${PROJECT_NAME}
 )

@@ -6,8 +6,7 @@
 #include "robo/dynamics.hpp"
 #include "robo/kinematics.hpp"
 #include "robo/util.hpp"
-#include "test/robo_test_util.hpp"
-#include "util/time.hpp"
+#include "robo/test/test_util.hpp"
 
 #include <chrono>
 #include <iomanip>
@@ -75,7 +74,7 @@ int main () {
   const double line_length = 0.5;
   const double step_size   = 0.001; // do 1mm steps
   const int    num_steps   = static_cast<int>(line_length/step_size);
-  
+
   // start point for solver
   VectorXd q_init = VectorXd::Constant(kin.num_joints(), 0.2);
 
