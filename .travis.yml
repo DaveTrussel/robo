@@ -38,6 +38,7 @@ matrix:
       env: COMPILER=clang++-3.9
 
 script:
+- git submodule update --init --recursive
 - cmake --version
 - mkdir build && cd build
 - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=RELEASE ..

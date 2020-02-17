@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 2.8.0) # TODO increase to 3.1 if available on travis
-project(robo)
-
+cmake_minimum_required(VERSION 3.5)
+project(robo LANGUAGES CXX)
 
 IF ( NOT CMAKE_BUILD_TYPE )
   SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build. Options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo." FORCE)
@@ -9,30 +8,61 @@ ELSE ( NOT CMAKE_BUILD_TYPE )
   MESSAGE( "Build type is set to '${CMAKE_BUILD_TYPE}' ." )
 ENDIF ( NOT CMAKE_BUILD_TYPE )
 
-include_directories(include/ lib/ /usr/include/eigen3)
+option(NLOPT_CXX "enable cxx routines" ON)
+option(NLOPT_FORTRAN "enable fortran tests" OFF)
+option(BUILD_SHARED_LIBS "Build NLopt as a shared library" OFF)
+option(NLOPT_PYTHON "build python bindings" OFF)
+option(NLOPT_OCTAVE "build octave bindings" OFF)
+option(NLOPT_MATLAB "build matlab bindings" OFF)
+option(NLOPT_GUILE "build guile bindings" OFF)
+option(NLOPT_SWIG "use SWIG to build bindings" OFF)
+add_subdirectory(third_party/nlopt)
 
-file(GLOB HEADERS "include/*.hpp")
-file(GLOB HEADERS_TEST "lib/catch.hpp")
-set(SRC_LIB src/kinematics.cpp src/dynamics.cpp)
-set(SRC_TEST_UNIT ${SRC_LIB} src/test_unit.cpp)
-set(SRC_TEST_TIME ${SRC_LIB} src/test_time.cpp)
-set(SRC_TEST_KINEMATICS_SIMPLE ${SRC_LIB} src/test_kinematics_simple.cpp)
-set(SRC_TEST_TRACKING ${SRC_LIB} src/test_tracking.cpp)
+add_library(${PROJECT_NAME}
+  src/robo/dynamics.cpp
+  src/robo/kinematics_forward.cpp
+  src/robo/kinematics_inverse.cpp
+)
 
+#src/robo/model_factory.cpp
 
-add_executable(test_unit ${SRC_TEST_UNIT} ${HEADERS} ${HEADERS_TEST})
-add_executable(test_time ${SRC_TEST_TIME} ${HEADERS} ${HEADERS_TEST})
-add_executable(test_kinematics_simple ${SRC_TEST_KINEMATICS_SIMPLE} ${HEADERS} ${HEADERS_TEST})
-add_executable(test_tracking ${SRC_TEST_TRACKING} ${HEADERS} ${HEADERS_TEST})
+target_include_directories(${PROJECT_NAME}
+PUBLIC
+  include/
+PRIVATE
+  src/
+  third_party/eigen/
+  ${nlopt_BINARY_DIR}/src/api
+)
 
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
+add_executable(test_unit
+  src/robo/test/unit.cpp
+)
 
-set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STANDARD 14)
-set_property(TARGET test_unit test_time test_kinematics_simple PROPERTY CXX_STANDARD_REQUIRED ON)
-# cmake>=3.1 not available on travis set std14 manually
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra" CACHE STRING "Compiler flags used by the Debug CMAKE_BUILD_TYPE." FORCE)
-#set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wall -Wextra -march=native" CACHE STRING "Compiler flags used by the Release CMAKE_BUILD_TYPE." FORCE)
-#set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Ofast -DNDEBUG -g -Wall -Wextra -march=native -fopenmp" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -DNDEBUG -g -Wall -Wextra -march=native" CACHE STRING "Compiler flags used by the RelWithDebInfo CMAKE_BUILD_TYPE." FORCE)
+target_link_libraries(test_unit
+  ${PROJECT_NAME}
+  nlopt
+)
+
+target_include_directories(test_unit
+PRIVATE
+  src/
+  third_party/
+  third_party/eigen/
+)
+
+add_executable(test_time
+  src/robo/test/time.cpp
+)
+
+target_include_directories(test_time
+PRIVATE
+  src/
+  third_party/eigen/
+)
+
+target_link_libraries(test_time
+  ${PROJECT_NAME}
+)
