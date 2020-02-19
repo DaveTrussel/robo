@@ -2,9 +2,11 @@
 
 [![Build Status](https://travis-ci.org/DaveTrussel/robo.svg?branch=master)](https://travis-ci.org/DaveTrussel/robo)
 
-This C++ project is intended to provide a simple way of modelling robotic chain manipulators and be used for their control. It lets you calculte the forward and inverse kinematics and dynamics of the robot.
+This C++ project is intended to provide a simple way of modeling robotic chain manipulators and be used for their control. It lets you calculate the forward and inverse kinematics and dynamics of the robot.
 
-Built with the following compilers: g++5, g++6, clang++3.6, clang++3.9
+Build tested with the following compilers:
+* clang and llvm 7
+* gcc 7.4.0
 
 License: GPLv3.
 
@@ -119,7 +121,7 @@ chain.add_link(link_3);
 chain.add_link(link_4);
 chain.add_link(link_5);
 chain.add_link(link_6);
-	
+
 Kinematics kin = Kinematics(chain);
 Dynamics dyn = Dynamics(chain);
 
@@ -162,7 +164,7 @@ Recursive Newton-Euler algorithm
 - Inverse Dynamic Model (Positions, Velocities, Accelerations -> Torques) :white_check_mark:
 - Own classes for twist (minimal velocity, acceleration representation) :white_check_mark: and Wrench (minimal force representation) :white_check_mark:
 - Own classes for inertia :white_check_mark:
-- Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter. 
+- Investigate possible ROS2 integration (also check if (soft/hard) real-time execution is possible through profiling i.e. low jitter.
 - Avoid dynamic memory allocation with malloc/new after initialization to avoid page faults and obtain deterministic execution paths. :white_check_mark:
 - Add license :white_check_mark:
 - Dynamic Model (Positions, Velocities, Torques -> Accelerations)
@@ -171,9 +173,8 @@ Recursive Newton-Euler algorithm
 - Add path planing
 - Add friction torques to joints and dynamics
 - Add rotor inertia to joints and dynamics
-- Avoid self-collision in IK (introduce sphere around each joint? cylinder around each link? do research on this) 
+- Avoid self-collision in IK (introduce sphere around each joint? cylinder around each link? do research on this)
 
 ## Authors
 
 * **David Trussel**  :monkey:
-
