@@ -14,3 +14,4 @@ script:
 - make
 - ./test_unit
 - ./test_time
+- ./test_inverse_kinematics
