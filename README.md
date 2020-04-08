@@ -1,6 +1,6 @@
 # Robo
 
-[![Build Status](https://travis-ci.org/DaveTrussel/robo.svg?branch=master)](https://travis-ci.org/DaveTrussel/robo)
+[![Build Status](https://travis-ci.org/dtrussel/robo.svg?branch=master)](https://travis-ci.org/dtrussel/robo)
 
 This C++ project is intended to provide a simple way of modeling robotic chain manipulators and be used for their control. It lets you calculate the forward and inverse kinematics and dynamics of the robot.
 
